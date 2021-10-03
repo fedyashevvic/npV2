@@ -6,10 +6,10 @@ import "./IBEP20.sol";
 import "./IDexRouter.sol";
 import "./IDexFactory.sol";
 
-contract Hibiki is IBEP20, Auth {
+contract AI is IBEP20, Auth {
 
-	string constant _name = "Hibiki.finance";
-  string constant _symbol = "HIBIKI";
+	string constant _name = "AIv2";
+  string constant _symbol = "AI";
   uint8 constant _decimals = 18;
 
   uint256 _totalSupply = 10_000_000 * (10 ** _decimals);
@@ -19,22 +19,14 @@ contract Hibiki is IBEP20, Auth {
 	mapping (address => uint256) _balances;
   mapping (address => mapping (address => uint256)) _allowances;
   mapping (address => bool) isFeeExempt;
-  mapping (address => bool) isTxLimitExempt;
+  mapping (address => address) private _taxAddresses;
+  mapping (address => uint256) private _taxAmount;
+  mapping (address => bool) private _isLaunched;
 
   // Fees. Some may be completely inactive at all times.
-  uint256 liquidityFee = 30;
-  uint256 burnFee = 0;
-  uint256 stakingFee = 20;
-  uint256 nftStakingFee = 0;
+  uint256 liquidityFee = 50;
   uint256 feeDenominator = 1000;
   bool public feeOnNonTrade = false;
-
-  uint256 public stakingPrizePool = 0;
-  bool public stakingRewardsActive = false;
-  address public stakingRewardsContract;
-  uint256 public nftStakingPrizePool = 0;
-  bool public nftStakingRewardsActive = false;
-  address public nftStakingRewardsContract;
 
   address public autoLiquidityReceiver;
 
@@ -71,6 +63,10 @@ contract Hibiki is IBEP20, Auth {
 
 		autoLiquidityReceiver = msg.sender;
 		pairs.push(pcs2BNBPair);
+    _taxAddresses[pcs2BNBPair] = address(this);
+    _taxAmount[pcs2BNBPair] = 50;
+    _isLaunched[pcs2BNBPair] = false;
+    
 		_balances[msg.sender] = _totalSupply;
 
 		emit Transfer(address(0), msg.sender, _totalSupply);
@@ -110,30 +106,41 @@ contract Hibiki is IBEP20, Auth {
     return _transferFrom(sender, recipient, amount);
   }
 
+  function returnTradeAddress(address sender, address recipient) internal view returns (address) {
+    address[] memory liqPairs = pairs;
+    for (uint256 i = 0; i < liqPairs.length; i++) {
+      if (sender == liqPairs[i] || recipient == liqPairs[i]) {
+        return liqPairs[i];
+      }
+    }
+    return address(0);
+  }
+
 	function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
 		require(amount > 0);
+    address tradeAddress = returnTradeAddress(sender, recipient);
 
     if (inSwap) {
-        return _basicTransfer(sender, recipient, amount);
+      return _basicTransfer(sender, recipient, amount);
     }
 
     // checks whether there is enouth tokens on balance to liquify the pair
-    if (shouldSwapBack()) {
+    if (shouldSwapBack(tradeAddress)) {
         liquify();
     }
 
     // activates the liquidity on DEX
-    if (!launched() && recipient == pcs2BNBPair) {
+    if (!_isLaunched[tradeAddress] && recipient == tradeAddress && tradeAddress != address(0)) {
         require(_balances[sender] > 0);
         require(sender == owner, "Only the owner can be the first to add liquidity.");
-        launch();
+        _isLaunched[tradeAddress] = !_isLaunched[tradeAddress];
     }
 
 		require(amount <= _balances[sender], "Insufficient Balance");
     _balances[sender] -= amount;
 
     // checks whether it needs to take a fee and takes it before transferring to the 
-    uint256 amountReceived = shouldTakeFee(sender, recipient) ? takeFee(sender, amount) : amount;
+    uint256 amountReceived = shouldTakeFee(sender, recipient, tradeAddress) ? takeFee(sender, amount, tradeAddress) : amount;
     _balances[recipient] += amountReceived;
     
     emit Transfer(sender, recipient, amountReceived);
@@ -151,8 +158,8 @@ contract Hibiki is IBEP20, Auth {
 	// Decides whether this trade should take a fee.
 	// Trades with pairs are always taxed, unless sender or receiver is exempted.
 	// Non trades, like wallet to wallet, are configured, untaxed by default.
-	function shouldTakeFee(address sender, address recipient) internal view returns (bool) {
-        if (isFeeExempt[sender] || isFeeExempt[recipient] || !launched()) {
+	function shouldTakeFee(address sender, address recipient, address tradeAddress) internal view returns (bool) {
+    if (isFeeExempt[sender] || isFeeExempt[recipient] || !_isLaunched[tradeAddress]) {
 			return false;
 		}
 
@@ -166,23 +173,23 @@ contract Hibiki is IBEP20, Auth {
         return feeOnNonTrade;
     }
 
-	function takeFee(address sender, uint256 amount) internal returns (uint256) {
-		if (!launched()) { return amount; }
+	function takeFee(address sender, uint256 amount, address tradeAddress) internal returns (uint256) {
+		if (!_isLaunched[tradeAddress]) { return amount; }
 
 		uint256 liqFee = 0;
     
     // If there is a liquidity tax active for autoliq, the contract keeps it.
     if (liquidityFee > 0) {
-      liqFee = amount * liquidityFee / feeDenominator;
-      _balances[address(this)] += liqFee;
+      liqFee = amount * _taxAmount[tradeAddress] / feeDenominator;
+      _balances[_taxAddresses[tradeAddress]] += liqFee;
       emit Transfer(sender, address(this), liqFee);
     }
 
     return amount - liqFee;
   }
 
-  function shouldSwapBack() internal view returns (bool) {
-      return launched()
+  function shouldSwapBack(address tradeAddress) internal view returns (bool) {
+      return _isLaunched[tradeAddress]
     && msg.sender != pcs2BNBPair
           && !inSwap
           && swapEnabled
@@ -226,14 +233,10 @@ contract Hibiki is IBEP20, Auth {
         isFeeExempt[holder] = exempt;
     }
 
-    function setFees(uint256 _liquidityFee, uint256 _burnFee, uint256 _stakingFee, uint256 _nftStakingFee, uint256 _feeDenominator) external authorized {
+    function setFees(uint256 _liquidityFee, uint256 _feeDenominator) external authorized {
       liquidityFee = _liquidityFee;
-      burnFee = _burnFee;
-      stakingFee = _stakingFee;
-      nftStakingFee = _nftStakingFee;
       feeDenominator = _feeDenominator;
-      uint256 totalFee = _liquidityFee + _burnFee + _stakingFee + _nftStakingFee;
-      require(totalFee < feeDenominator / 5, "Maximum allowed taxation on this contract is 20%.");
+      require(_liquidityFee < feeDenominator / 5, "Maximum allowed taxation on this contract is 20%.");
     }
 
     function setLiquidityReceiver(address _autoLiquidityReceiver) external authorized {
