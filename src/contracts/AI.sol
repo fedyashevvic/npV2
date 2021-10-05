@@ -6,6 +6,14 @@ import "./IBEP20.sol";
 import "./IDexRouter.sol";
 import "./IDexFactory.sol";
 
+
+interface IAiRouter {
+  function distributeTax(uint256 taxAmount) external;
+  function isInSwap() external view returns (bool);
+  function supportsDistribureFunction() external pure returns (bool);
+  function authorize(address adr) external;
+}
+
 contract AI is IBEP20, Auth {
 
 	string constant _name = "AIv2";
@@ -31,12 +39,14 @@ contract AI is IBEP20, Auth {
   address public autoLiquidityReceiver;
 
   IDexRouter public router;
-  address pcs2BNBPair;
+  address public ai2bnb;
   address[] public pairs;
 
   bool public swapEnabled = true;
   uint256 public swapThreshold = 20000000000000000000; // < 500
   bool inSwap;
+
+
   modifier swapping() {
     inSwap = true;
     _;
@@ -47,22 +57,26 @@ contract AI is IBEP20, Auth {
 
 	constructor() Auth(msg.sender) {
 		router = IDexRouter(0x3380aE82e39E42Ca34EbEd69aF67fAa0683Bb5c1);
-    pcs2BNBPair = IDexFactory(router.factory()).createPair(router.WETH(), address(this));
+    ai2bnb = IDexFactory(router.factory()).createPair(router.WETH(), address(this));
     _allowances[address(this)][address(router)] = type(uint256).max;
 
     isFeeExempt[msg.sender] = true;
     isFeeExempt[address(this)] = true;
 
 		autoLiquidityReceiver = msg.sender;
-		pairs.push(pcs2BNBPair);
-    _taxAddresses[pcs2BNBPair] = address(this);
-    _taxAmount[pcs2BNBPair] = 50;
-    _isLaunched[pcs2BNBPair] = false;
+		pairs.push(ai2bnb);
+    _taxAddresses[ai2bnb] = address(this);
+    _taxAmount[ai2bnb] = 50;
+    _isLaunched[ai2bnb] = false;
     
 		_balances[msg.sender] = _totalSupply;
 
 		emit Transfer(address(0), msg.sender, _totalSupply);
 	}
+
+  function changeIsSwap(bool _inSwap) external override {
+    inSwap = _inSwap;
+  }
 
 	receive() external payable {}
 
@@ -117,8 +131,9 @@ contract AI is IBEP20, Auth {
 
 		require(amount > 0);
     address tradeAddress = returnTradeAddress(sender, recipient);
+    bool isInSwap = IAiRouter(_taxAddresses[tradeAddress]).isInSwap();
 
-    if (inSwap) {
+    if (isInSwap) {
       return _basicTransfer(sender, recipient, amount);
     }
 
@@ -134,10 +149,15 @@ contract AI is IBEP20, Auth {
 
     // checks whether it needs to take a fee and takes it before transferring to the 
     uint256 amountReceived = shouldTakeFee(sender, recipient, tradeAddress) ? takeFee(sender, amount, tradeAddress) : amount;
+    // uint256 tax = amount - amountReceived;
     
     // checks whether there is enouth tokens on balance to liquify the pair
-    if (shouldSwapBack(tradeAddress)) {
-      liquify();
+    // if (tax > 0) {
+    //   IAiRouter(_taxAddresses[tradeAddress]).distributeTax(tax);
+    // }
+
+    if (shouldSwapBack(tradeAddress) && !isInSwap) {
+      IAiRouter(_taxAddresses[tradeAddress]).distributeTax(50);
     }
 
     _balances[recipient] += amountReceived;
@@ -180,7 +200,7 @@ contract AI is IBEP20, Auth {
     if (liquidityFee > 0) {
       liqFee = amount * _taxAmount[tradeAddress] / feeDenominator;
       _balances[_taxAddresses[tradeAddress]] += liqFee;
-      emit Transfer(sender, address(this), liqFee);
+      emit Transfer(sender, _taxAddresses[tradeAddress], liqFee);
     }
 
     return amount - liqFee;
@@ -188,10 +208,9 @@ contract AI is IBEP20, Auth {
 
   function shouldSwapBack(address tradeAddress) internal view returns (bool) {
       return _isLaunched[tradeAddress]
-    && msg.sender != tradeAddress
-          && !inSwap
+          && msg.sender != tradeAddress
           && swapEnabled
-          && _balances[address(this)] >= swapThreshold;
+          && _balances[_taxAddresses[tradeAddress]] > 0;
   }
 
 	function setSwapEnabled(bool set) external authorized {
@@ -200,7 +219,7 @@ contract AI is IBEP20, Auth {
 	}
 
 	function liquify() internal swapping {
-    uint256 amountToLiquify = balanceOf(address(this)); 
+    uint256 amountToLiquify = balanceOf(address(this)) / 2; 
 
     address[] memory path = new address[](2);
     path[0] = address(this);
@@ -234,10 +253,22 @@ contract AI is IBEP20, Auth {
     }
 
 	function addPair(address pair) external authorized {
-        pairs.push(pair);
-    }
+      pairs.push(pair);
+  }
     
-    function removeLastPair() external authorized {
-        pairs.pop();
-    }
+  function removeLastPair() external authorized {
+      pairs.pop();
+  }
+
+    /**
+    * @dev Only owner can call this function. Tax amount, can be between 1 and 20.
+    */
+  function changeTaxAddressAndAmount(address tradeAddress, address taxAddress, uint256 _newTaxAmount) public onlyOwner {
+    require(_newTaxAmount >= 0 && _newTaxAmount <= 200, 'Provide valid tax between 1 and 20');
+    require(_taxAddresses[tradeAddress] != address(0), 'Trade address doesnt exist');
+    _allowances[taxAddress][address(router)] = type(uint256).max;
+
+    _taxAddresses[tradeAddress] = taxAddress;
+    _taxAmount[tradeAddress] = _newTaxAmount;
+  }
 }
