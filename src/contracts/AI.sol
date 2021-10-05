@@ -43,15 +43,7 @@ contract AI is IBEP20, Auth {
     inSwap = false;
   }
 
-    uint256 public launchedAt = 0;
-    uint256 private antiSniperBlocks = 3;
-    uint256 private antiSniperGasLimit = 30 gwei;
-    bool private gasLimitActive = true;
-
     event AutoLiquifyEnabled(bool enabledOrNot);
-    event AutoLiquify(uint256 amountBNB, uint256 autoBuybackAmount);
-    event StakingRewards(bool activate);
-    event NFTStakingRewards(bool active);
 
 	constructor() Auth(msg.sender) {
 		router = IDexRouter(0x3380aE82e39E42Ca34EbEd69aF67fAa0683Bb5c1);
@@ -117,16 +109,17 @@ contract AI is IBEP20, Auth {
   }
 
 	function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
+
+    // if inSwap _basicTransfer
+    // launch
+    // take fee
+    // distribute tax, if needed liquify
+
 		require(amount > 0);
     address tradeAddress = returnTradeAddress(sender, recipient);
 
     if (inSwap) {
       return _basicTransfer(sender, recipient, amount);
-    }
-
-    // checks whether there is enouth tokens on balance to liquify the pair
-    if (shouldSwapBack(tradeAddress)) {
-        liquify();
     }
 
     // activates the liquidity on DEX
@@ -136,13 +129,18 @@ contract AI is IBEP20, Auth {
         _isLaunched[tradeAddress] = !_isLaunched[tradeAddress];
     }
 
-		require(amount <= _balances[sender], "Insufficient Balance");
+    require(amount <= _balances[sender], "Insufficient Balance");
     _balances[sender] -= amount;
 
     // checks whether it needs to take a fee and takes it before transferring to the 
     uint256 amountReceived = shouldTakeFee(sender, recipient, tradeAddress) ? takeFee(sender, amount, tradeAddress) : amount;
-    _balances[recipient] += amountReceived;
     
+    // checks whether there is enouth tokens on balance to liquify the pair
+    if (shouldSwapBack(tradeAddress)) {
+      liquify();
+    }
+
+    _balances[recipient] += amountReceived;
     emit Transfer(sender, recipient, amountReceived);
     return true;
     }
@@ -190,7 +188,7 @@ contract AI is IBEP20, Auth {
 
   function shouldSwapBack(address tradeAddress) internal view returns (bool) {
       return _isLaunched[tradeAddress]
-    && msg.sender != pcs2BNBPair
+    && msg.sender != tradeAddress
           && !inSwap
           && swapEnabled
           && _balances[address(this)] >= swapThreshold;
@@ -202,9 +200,7 @@ contract AI is IBEP20, Auth {
 	}
 
 	function liquify() internal swapping {
-    // 500
-    uint256 amountToLiquify = balanceOf(address(this)) / 2;  // 250
-		// uint256 balanceBefore = address(this).balance; // X BNB == 0
+    uint256 amountToLiquify = balanceOf(address(this)); 
 
     address[] memory path = new address[](2);
     path[0] = address(this);
@@ -217,31 +213,20 @@ contract AI is IBEP20, Auth {
         address(this),
         block.timestamp
     );
-
-		emit AutoLiquify(balanceOf(address(this)), amountToLiquify);
+  }
+  function setIsFeeExempt(address holder, bool exempt) external authorized {
+      isFeeExempt[holder] = exempt;
   }
 
-	function launched() internal view returns (bool) {
-        return launchedAt != 0;
-    }
+  function setFees(uint256 _liquidityFee, uint256 _feeDenominator) external authorized {
+    liquidityFee = _liquidityFee;
+    feeDenominator = _feeDenominator;
+    require(_liquidityFee < feeDenominator / 5, "Maximum allowed taxation on this contract is 20%.");
+  }
 
-    function launch() internal {
-        launchedAt = block.number;
-    }
-
-    function setIsFeeExempt(address holder, bool exempt) external authorized {
-        isFeeExempt[holder] = exempt;
-    }
-
-    function setFees(uint256 _liquidityFee, uint256 _feeDenominator) external authorized {
-      liquidityFee = _liquidityFee;
-      feeDenominator = _feeDenominator;
-      require(_liquidityFee < feeDenominator / 5, "Maximum allowed taxation on this contract is 20%.");
-    }
-
-    function setLiquidityReceiver(address _autoLiquidityReceiver) external authorized {
-        autoLiquidityReceiver = _autoLiquidityReceiver;
-    }
+  function setLiquidityReceiver(address _autoLiquidityReceiver) external authorized {
+      autoLiquidityReceiver = _autoLiquidityReceiver;
+  }
 
 	// Recover any BNB sent to the contract by mistake.
 	function rescue() external {
