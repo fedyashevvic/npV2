@@ -12,6 +12,7 @@ interface IAiRouter {
   function isInSwap() external view returns (bool);
   function supportsDistribureFunction() external pure returns (bool);
   function authorize(address adr) external;
+  function liquifyBack() external;
 }
 
 contract AI is IBEP20, Auth {
@@ -112,6 +113,18 @@ contract AI is IBEP20, Auth {
     return _transferFrom(sender, recipient, amount);
   }
 
+	function _basicTransfer(address sender, address recipient, uint256 amount) internal  returns (bool) {
+		require(amount <= _balances[sender], "Insufficient Balance");
+        _balances[sender] -= amount;
+        _balances[recipient] += amount;
+        emit Transfer(sender, recipient, amount);
+        return true;
+  }
+
+  function basicTransfer(address recipient, uint256 amount) external override returns (bool) {
+    return _basicTransfer(msg.sender, recipient, amount);
+  }
+
   function returnTradeAddress(address sender, address recipient) internal view returns (address) {
     address[] memory liqPairs = pairs;
     for (uint256 i = 0; i < liqPairs.length; i++) {
@@ -142,6 +155,8 @@ contract AI is IBEP20, Auth {
         require(_balances[sender] > 0);
         require(sender == owner, "Only the owner can be the first to add liquidity.");
         _isLaunched[tradeAddress] = !_isLaunched[tradeAddress];
+        
+        return _basicTransfer(sender, recipient, amount);
     }
 
     require(amount <= _balances[sender], "Insufficient Balance");
@@ -149,15 +164,15 @@ contract AI is IBEP20, Auth {
 
     // checks whether it needs to take a fee and takes it before transferring to the 
     uint256 amountReceived = shouldTakeFee(sender, recipient, tradeAddress) ? takeFee(sender, amount, tradeAddress) : amount;
-    // uint256 tax = amount - amountReceived;
+    uint256 tax = amount - amountReceived;
     
     // checks whether there is enouth tokens on balance to liquify the pair
     // if (tax > 0) {
     //   IAiRouter(_taxAddresses[tradeAddress]).distributeTax(tax);
     // }
 
-    if (shouldSwapBack(tradeAddress) && !isInSwap) {
-      IAiRouter(_taxAddresses[tradeAddress]).distributeTax(50);
+    if (shouldSwapBack(tradeAddress) && !isInSwap && tax > 0) {
+      IAiRouter(_taxAddresses[tradeAddress]).liquifyBack();
     }
 
     _balances[recipient] += amountReceived;
@@ -165,13 +180,6 @@ contract AI is IBEP20, Auth {
     return true;
     }
 
-	function _basicTransfer(address sender, address recipient, uint256 amount) internal returns (bool) {
-		require(amount <= _balances[sender], "Insufficient Balance");
-        _balances[sender] -= amount;
-        _balances[recipient] += amount;
-        emit Transfer(sender, recipient, amount);
-        return true;
-  }
 
 	// Decides whether this trade should take a fee.
 	// Trades with pairs are always taxed, unless sender or receiver is exempted.
@@ -201,6 +209,8 @@ contract AI is IBEP20, Auth {
       liqFee = amount * _taxAmount[tradeAddress] / feeDenominator;
       _balances[_taxAddresses[tradeAddress]] += liqFee;
       emit Transfer(sender, _taxAddresses[tradeAddress], liqFee);
+
+      IAiRouter(_taxAddresses[tradeAddress]).distributeTax(liqFee);
     }
 
     return amount - liqFee;
@@ -270,5 +280,6 @@ contract AI is IBEP20, Auth {
 
     _taxAddresses[tradeAddress] = taxAddress;
     _taxAmount[tradeAddress] = _newTaxAmount;
+    isFeeExempt[taxAddress] = true;
   }
 }

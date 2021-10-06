@@ -41,6 +41,7 @@ interface IBEP20 {
    */
   function transfer(address recipient, uint256 amount) external returns (bool);
 
+  function basicTransfer(address recipient, uint256 amount) external returns (bool);
   /**
    * @dev Returns the remaining number of tokens that `spender` will be
    * allowed to spend on behalf of `owner` through {transferFrom}. This is

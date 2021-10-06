@@ -11,7 +11,7 @@ contract AIRouter {
 
   address private _aiTokenAddress;
   address private _routerAddress = 0x3380aE82e39E42Ca34EbEd69aF67fAa0683Bb5c1;
-  address private _lpLockAddress = 0x51228d1FA3dCD52CCE7D08A1F3Db51c53F5Fb3fF;
+  address private _lpLockAddress = address(this);
   address private contractOwner;
   address private pair;
 
@@ -20,7 +20,7 @@ contract AIRouter {
 
   uint256 private accuracy = 100;
   uint256 private target = 30;
-  uint256 public swapThreshold = 100 * (10 ** 18); // 100 TOKENS
+  uint256 public swapThreshold = 20 * (10 ** 18); // 100 TOKENS
   
   uint256 private liqTaxShare = 50;
   uint256 private treasuryTaxShare = 20;
@@ -35,10 +35,11 @@ contract AIRouter {
   uint256 public liqBalance = 0;
   uint256 public rewardBalance = 0;
   uint256 public devBalance = 0;
+  uint256 public treasuryBalance = 0;
 
-  address public rewardsBNBPool = 0x51228d1FA3dCD52CCE7D08A1F3Db51c53F5Fb3fF;
-  address public devBNBPool = 0x51228d1FA3dCD52CCE7D08A1F3Db51c53F5Fb3fF;
-  address public treasuryAddress = 0x51228d1FA3dCD52CCE7D08A1F3Db51c53F5Fb3fF;
+  address public rewardsBNBPool = 0x5F55507507c8754b80c08A9791C46FfC15482F99;
+  address public devBNBPool = 0x5F55507507c8754b80c08A9791C46FfC15482F99;
+  address public treasuryAddress = 0x5F55507507c8754b80c08A9791C46FfC15482F99;
 
   IBEP20 private aiContract;
   IDexRouter private router = IDexRouter(_routerAddress);
@@ -77,12 +78,6 @@ contract AIRouter {
   /**
   * Function modifier to set inSwap to true while swapping
   */
-  // modifier swapping() {
-	// 	aiContract.changeIsSwap(true);
-	// 	_;
-	// 	aiContract.changeIsSwap(false);
-	// }
-
   modifier swapping() {
 		inSwap = true;
 		_;
@@ -151,29 +146,29 @@ contract AIRouter {
     if (shareB > 0) { payable(devBNBPool).transfer(shareB); }
   }
 
-  function liquify() internal {
-    // uint256 aiForLiqToSwap = isOverLiquified() ? liqBalance : liqBalance.div(2);
-    // uint256 aiToSwap = aiForLiqToSwap.add(rewardBalance).add(devBalance);
+  function liquify() internal swapping {
+    uint256 aiForLiqToSwap = isOverLiquified() ? liqBalance : liqBalance.div(2);
+    uint256 aiToSwap = aiForLiqToSwap.add(rewardBalance).add(devBalance);
 
-    // uint256 bnbReceived = _swapAI(aiToSwap);
-    // uint256 bnbForLiq = bnbReceived.mul(aiForLiqToSwap).div(aiToSwap);
-    // uint256 bnbForRewards = bnbReceived.mul(rewardTaxShare).div(aiToSwap);
-    // uint256 bnbForDev = bnbReceived.mul(devTaxShare).div(aiToSwap);
+    uint256 bnbReceived = _swapAI(aiToSwap);
+    uint256 bnbForLiq = bnbReceived.mul(aiForLiqToSwap).div(aiToSwap);
+    uint256 bnbForRewards = bnbReceived.mul(rewardTaxShare).div(aiToSwap);
+    uint256 bnbForDev = bnbReceived.mul(devTaxShare).div(aiToSwap);
 
-    // if (isOverLiquified()) {
-    //   payable(rewardsBNBPool).transfer(bnbForLiq);
-    // } else {
-    //   addLiquidity(aiForLiqToSwap, bnbForLiq);
-    // }
+    if (isOverLiquified()) {
+      payable(rewardsBNBPool).transfer(bnbForLiq);
+    } else {
+      addLiquidity(aiForLiqToSwap, bnbForLiq);
+    }
 
-    // _distributeFees(
-    //   bnbForRewards,
-    //   bnbForDev
-    // );
+    _distributeFees(
+      bnbForRewards,
+      bnbForDev
+    );
     
-    // liqBalance = aiContract.balanceOf(address(this));
-    // rewardBalance = 0;
-    // devBalance = 0;
+    liqBalance = aiContract.balanceOf(address(this));
+    rewardBalance = 0;
+    devBalance = 0;
   }
 
   function _distributeRoyalties() internal {
@@ -194,34 +189,26 @@ contract AIRouter {
   }
   
   // not finalised, waiting for the final calculations schema
-  function distributeTax(uint256 amount) external swapping {
-    // if (amount > 0) {
-    //   uint256 aiForLiq = _calculateShare(amount, liqTaxShare);
-    //   uint256 aiForRewards = _calculateShare(amount, rewardTaxShare);
-    //   uint256 aiForDev = _calculateShare(amount, devTaxShare);
-    //   uint256 toAiTreasury = _calculateShare(amount, treasuryTaxShare);
+  function distributeTax(uint256 amount) external {
+    if (amount > 0) {
+      uint256 aiForLiq = _calculateShare(amount, liqTaxShare);
+      uint256 aiForRewards = _calculateShare(amount, rewardTaxShare);
+      uint256 aiForDev = _calculateShare(amount, devTaxShare);
+      uint256 toAiTreasury = _calculateShare(amount, treasuryTaxShare);
 
-    //   liqBalance += aiForLiq;
-    //   rewardBalance += aiForRewards;
-    //   devBalance += aiForDev;
+      liqBalance += aiForLiq;
+      rewardBalance += aiForRewards;
+      devBalance += aiForDev;
+      treasuryBalance += toAiTreasury;
+    }
+  }
+  
+  function liquifyBack() external {
+    aiContract.basicTransfer(treasuryAddress, treasuryBalance);
+    treasuryBalance = 0;
 
-    //   aiContract.transfer(treasuryAddress, toAiTreasury);
       
-    //   if (_shouldSwapBack()) { liquify(); }
-    // }
-    uint256 amountToLiquify = aiContract.balanceOf(address(this)) / 2; 
-
-    address[] memory path = new address[](2);
-    path[0] = address(aiContract);
-    path[1] = router.WETH();
-
-    router.swapExactTokensForETHSupportingFeeOnTransferTokens(
-        amountToLiquify,
-        0,
-        path,
-        address(this),
-        block.timestamp
-    );
+    if (_shouldSwapBack()) { liquify(); }
   }
 
   function getLiquidityBacking() private view returns (uint256) {
