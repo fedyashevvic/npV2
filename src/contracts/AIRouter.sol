@@ -37,8 +37,8 @@ contract AIRouter {
   uint256 public devBalance = 0;
   uint256 public treasuryBalance = 0;
 
-  address public rewardsBNBPool = 0x5F55507507c8754b80c08A9791C46FfC15482F99;
-  address public devBNBPool = 0x5F55507507c8754b80c08A9791C46FfC15482F99;
+  address public rewardsBNBPool = 0x9423BbAb02a50541C3ecF9F4c659ED6EA332AF42;
+  address public devBNBPool = 0x9423BbAb02a50541C3ecF9F4c659ED6EA332AF42;
   address public treasuryAddress = 0x5F55507507c8754b80c08A9791C46FfC15482F99;
 
   IBEP20 private aiContract;
@@ -152,26 +152,14 @@ contract AIRouter {
 
     uint256 bnbReceived = _swapAI(aiToSwap, address(this));
     uint256 bnbForLiq = bnbReceived.mul(aiForLiqToSwap).div(aiToSwap);
-    uint256 bnbForRewards = bnbReceived.sub(bnbForLiq);
-    uint256 bnbForDev = 0;
+    uint256 bnbForRewards = bnbReceived.mul(rewardBalance).div(aiToSwap);
+    uint256 bnbForDev = bnbReceived.mul(devBalance).div(aiToSwap);
 
     if (isOverLiquified()) {
       payable(rewardsBNBPool).transfer(bnbForLiq);
     } else {
       addLiquidity(aiForLiqToSwap, bnbForLiq);
     }
-
-    // uint256 aiForLiqToSwap = isOverLiquified() ? liqBalance : liqBalance.div(2);
-
-    // _swapAI(rewardBalance, rewardsBNBPool);
-    // _swapAI(devBalance, devBNBPool);
-
-    // if (isOverLiquified() && aiForLiqToSwap == liqBalance) {
-    //   _swapAI(aiForLiqToSwap, rewardsBNBPool);
-    // } else {
-    //   uint256 bnbForLiqReceived = _swapAI(aiForLiqToSwap, address(this));
-    //   addLiquidity(aiForLiqToSwap, bnbForLiqReceived);
-    // }
 
     _distributeFees(
       bnbForRewards,
