@@ -56,9 +56,9 @@ contract AIRouter {
   }
 
   receive() external payable {
-    // if (!inSwap) {
-    //   _distributeRoyalties();
-    // }
+    if (!inSwap) {
+      _distributeRoyalties();
+    }
   }
   
   /**
@@ -110,7 +110,7 @@ contract AIRouter {
 		);
   }
 
-  function _swapAI(uint256 swapAmount) private returns (uint256) {
+  function _swapAI(uint256 swapAmount, address sendBnbTo) private returns (uint256) {
     uint256 balanceBeforeSwap = address(this).balance;
     
     address[] memory path = new address[](2);
@@ -121,7 +121,7 @@ contract AIRouter {
         swapAmount,
         0,
         path,
-        address(this),
+        sendBnbTo,
         block.timestamp
     );
 
@@ -150,16 +150,28 @@ contract AIRouter {
     uint256 aiForLiqToSwap = isOverLiquified() ? liqBalance : liqBalance.div(2);
     uint256 aiToSwap = aiForLiqToSwap.add(rewardBalance).add(devBalance);
 
-    uint256 bnbReceived = _swapAI(aiToSwap);
+    uint256 bnbReceived = _swapAI(aiToSwap, address(this));
     uint256 bnbForLiq = bnbReceived.mul(aiForLiqToSwap).div(aiToSwap);
-    uint256 bnbForRewards = bnbReceived.mul(rewardTaxShare).div(aiToSwap);
-    uint256 bnbForDev = bnbReceived.mul(devTaxShare).div(aiToSwap);
+    uint256 bnbForRewards = bnbReceived.sub(bnbForLiq);
+    uint256 bnbForDev = 0;
 
     if (isOverLiquified()) {
       payable(rewardsBNBPool).transfer(bnbForLiq);
     } else {
       addLiquidity(aiForLiqToSwap, bnbForLiq);
     }
+
+    // uint256 aiForLiqToSwap = isOverLiquified() ? liqBalance : liqBalance.div(2);
+
+    // _swapAI(rewardBalance, rewardsBNBPool);
+    // _swapAI(devBalance, devBNBPool);
+
+    // if (isOverLiquified() && aiForLiqToSwap == liqBalance) {
+    //   _swapAI(aiForLiqToSwap, rewardsBNBPool);
+    // } else {
+    //   uint256 bnbForLiqReceived = _swapAI(aiForLiqToSwap, address(this));
+    //   addLiquidity(aiForLiqToSwap, bnbForLiqReceived);
+    // }
 
     _distributeFees(
       bnbForRewards,
@@ -181,7 +193,7 @@ contract AIRouter {
     uint256 bnbToDev = _calculateShare(receivedAmount, devRoyaltyShare);
 
     liqBalance += aiForLiq;
-    aiContract.transfer(treasuryAddress, toAiTreasury);
+    aiContract.basicTransfer(treasuryAddress, toAiTreasury);
 
     _distributeFees(bnbToReward, bnbToDev);
 
@@ -206,7 +218,6 @@ contract AIRouter {
   function liquifyBack() external {
     aiContract.basicTransfer(treasuryAddress, treasuryBalance);
     treasuryBalance = 0;
-
       
     if (_shouldSwapBack()) { liquify(); }
   }

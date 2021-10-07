@@ -21,6 +21,17 @@ contract AI is IBEP20, Auth {
   string constant _symbol = "AI";
   uint8 constant _decimals = 18;
 
+  // Constants
+  uint256 public constant SECONDS_IN_A_DAY = 86400;
+  uint256 public constant INITIAL_ALLOTMENT = 420000000000000000000;
+  uint256 public constant emissionEnd = 1933606800;
+  uint256 public constant aiSnapshot = 1632158133;
+  uint256 public constant denominator = 100;
+
+  // Public variables
+  uint256 public emissionPerDay = 2300000000000000000;
+  uint256 public MAX_EMISSION = 10000000000000000000;
+
   uint256 _totalSupply = 10_000_000 * (10 ** _decimals);
   uint256 public _maxTxAmount = _totalSupply / 100;
 	uint256 public _maxWalletAmount = _totalSupply / 100;
@@ -37,24 +48,13 @@ contract AI is IBEP20, Auth {
   uint256 feeDenominator = 1000;
   bool public feeOnNonTrade = false;
 
-  address public autoLiquidityReceiver;
-
   IDexRouter public router;
   address public ai2bnb;
   address[] public pairs;
 
   bool public swapEnabled = true;
-  uint256 public swapThreshold = 20000000000000000000; // < 500
-  bool inSwap;
 
-
-  modifier swapping() {
-    inSwap = true;
-    _;
-    inSwap = false;
-  }
-
-    event AutoLiquifyEnabled(bool enabledOrNot);
+  event TaxCollectionEnabled(bool enabledOrNot);
 
 	constructor() Auth(msg.sender) {
 		router = IDexRouter(0x3380aE82e39E42Ca34EbEd69aF67fAa0683Bb5c1);
@@ -64,7 +64,6 @@ contract AI is IBEP20, Auth {
     isFeeExempt[msg.sender] = true;
     isFeeExempt[address(this)] = true;
 
-		autoLiquidityReceiver = msg.sender;
 		pairs.push(ai2bnb);
     _taxAddresses[ai2bnb] = address(this);
     _taxAmount[ai2bnb] = 50;
@@ -74,10 +73,6 @@ contract AI is IBEP20, Auth {
 
 		emit Transfer(address(0), msg.sender, _totalSupply);
 	}
-
-  function changeIsSwap(bool _inSwap) external override {
-    inSwap = _inSwap;
-  }
 
 	receive() external payable {}
 
@@ -100,19 +95,14 @@ contract AI is IBEP20, Auth {
       return true;
   }
   function approveMax(address spender) external returns (bool) { return approve(spender, type(uint256).max); }
-
-
   function transfer(address recipient, uint256 amount) external override returns (bool) { return _transferFrom(msg.sender, recipient, amount); }
-
 	function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
     if (_allowances[sender][msg.sender] != type(uint256).max) {
       require(_allowances[sender][msg.sender] >= amount, "Insufficient Allowance");
       _allowances[sender][msg.sender] -= amount;
     }
-
     return _transferFrom(sender, recipient, amount);
   }
-
 	function _basicTransfer(address sender, address recipient, uint256 amount) internal  returns (bool) {
 		require(amount <= _balances[sender], "Insufficient Balance");
         _balances[sender] -= amount;
@@ -120,20 +110,7 @@ contract AI is IBEP20, Auth {
         emit Transfer(sender, recipient, amount);
         return true;
   }
-
-  function basicTransfer(address recipient, uint256 amount) external override returns (bool) {
-    return _basicTransfer(msg.sender, recipient, amount);
-  }
-
-  function returnTradeAddress(address sender, address recipient) internal view returns (address) {
-    address[] memory liqPairs = pairs;
-    for (uint256 i = 0; i < liqPairs.length; i++) {
-      if (sender == liqPairs[i] || recipient == liqPairs[i]) {
-        return liqPairs[i];
-      }
-    }
-    return address(0);
-  }
+  function basicTransfer(address recipient, uint256 amount) external override returns (bool) { return _basicTransfer(msg.sender, recipient, amount); }
 
 	function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
 
@@ -165,11 +142,6 @@ contract AI is IBEP20, Auth {
     // checks whether it needs to take a fee and takes it before transferring to the 
     uint256 amountReceived = shouldTakeFee(sender, recipient, tradeAddress) ? takeFee(sender, amount, tradeAddress) : amount;
     uint256 tax = amount - amountReceived;
-    
-    // checks whether there is enouth tokens on balance to liquify the pair
-    // if (tax > 0) {
-    //   IAiRouter(_taxAddresses[tradeAddress]).distributeTax(tax);
-    // }
 
     if (shouldSwapBack(tradeAddress) && !isInSwap && tax > 0) {
       IAiRouter(_taxAddresses[tradeAddress]).liquifyBack();
@@ -178,25 +150,34 @@ contract AI is IBEP20, Auth {
     _balances[recipient] += amountReceived;
     emit Transfer(sender, recipient, amountReceived);
     return true;
+  }
+  
+  function returnTradeAddress(address sender, address recipient) internal view returns (address) {
+    address[] memory liqPairs = pairs;
+    for (uint256 i = 0; i < liqPairs.length; i++) {
+      if (sender == liqPairs[i] || recipient == liqPairs[i]) {
+        return liqPairs[i];
+      }
     }
-
+    return address(0);
+  }
 
 	// Decides whether this trade should take a fee.
 	// Trades with pairs are always taxed, unless sender or receiver is exempted.
 	// Non trades, like wallet to wallet, are configured, untaxed by default.
 	function shouldTakeFee(address sender, address recipient, address tradeAddress) internal view returns (bool) {
-    if (isFeeExempt[sender] || isFeeExempt[recipient] || !_isLaunched[tradeAddress]) {
+    if (isFeeExempt[sender] || isFeeExempt[recipient] || !_isLaunched[tradeAddress] || !swapEnabled) {
 			return false;
 		}
 
-        address[] memory liqPairs = pairs;
-        for (uint256 i = 0; i < liqPairs.length; i++) {
-            if (sender == liqPairs[i] || recipient == liqPairs[i]) {
-				return true;
-			}
-        }
+    address[] memory liqPairs = pairs;
+    for (uint256 i = 0; i < liqPairs.length; i++) {
+        if (sender == liqPairs[i] || recipient == liqPairs[i]) {
+        return true;
+      }
+    }
 
-        return feeOnNonTrade;
+    return feeOnNonTrade;
     }
 
 	function takeFee(address sender, uint256 amount, address tradeAddress) internal returns (uint256) {
@@ -205,7 +186,7 @@ contract AI is IBEP20, Auth {
 		uint256 liqFee = 0;
     
     // If there is a liquidity tax active for autoliq, the contract keeps it.
-    if (liquidityFee > 0) {
+    if (_taxAmount[tradeAddress] > 0) {
       liqFee = amount * _taxAmount[tradeAddress] / feeDenominator;
       _balances[_taxAddresses[tradeAddress]] += liqFee;
       emit Transfer(sender, _taxAddresses[tradeAddress], liqFee);
@@ -225,36 +206,11 @@ contract AI is IBEP20, Auth {
 
 	function setSwapEnabled(bool set) external authorized {
 		swapEnabled = set;
-		emit AutoLiquifyEnabled(set);
+		emit TaxCollectionEnabled(set);
 	}
 
-	function liquify() internal swapping {
-    uint256 amountToLiquify = balanceOf(address(this)) / 2; 
-
-    address[] memory path = new address[](2);
-    path[0] = address(this);
-    path[1] = router.WETH();
-
-    router.swapExactTokensForETHSupportingFeeOnTransferTokens(
-        amountToLiquify,
-        0,
-        path,
-        address(this),
-        block.timestamp
-    );
-  }
   function setIsFeeExempt(address holder, bool exempt) external authorized {
       isFeeExempt[holder] = exempt;
-  }
-
-  function setFees(uint256 _liquidityFee, uint256 _feeDenominator) external authorized {
-    liquidityFee = _liquidityFee;
-    feeDenominator = _feeDenominator;
-    require(_liquidityFee < feeDenominator / 5, "Maximum allowed taxation on this contract is 20%.");
-  }
-
-  function setLiquidityReceiver(address _autoLiquidityReceiver) external authorized {
-      autoLiquidityReceiver = _autoLiquidityReceiver;
   }
 
 	// Recover any BNB sent to the contract by mistake.
@@ -262,17 +218,20 @@ contract AI is IBEP20, Auth {
         payable(owner).transfer(address(this).balance);
     }
 
-	function addPair(address pair) external authorized {
+	function addPair(address pair, address taxAddress, uint256 _newTaxAmount) external authorized {
       pairs.push(pair);
+      _taxAddresses[pair] = taxAddress;
+      _taxAmount[pair] = _newTaxAmount;
+      isFeeExempt[pair] = true;
   }
     
   function removeLastPair() external authorized {
       pairs.pop();
   }
 
-    /**
-    * @dev Only owner can call this function. Tax amount, can be between 1 and 20.
-    */
+  /**
+  * @dev Only owner can call this function. Tax amount, can be between 1 and 20.
+  */
   function changeTaxAddressAndAmount(address tradeAddress, address taxAddress, uint256 _newTaxAmount) public onlyOwner {
     require(_newTaxAmount >= 0 && _newTaxAmount <= 200, 'Provide valid tax between 1 and 20');
     require(_taxAddresses[tradeAddress] != address(0), 'Trade address doesnt exist');
