@@ -5,6 +5,12 @@ const mnemonic = "expose bar release sibling deny mother donkey blue creek furna
 const HDWalletProvider = require("truffle-hdwallet-provider");
 
 module.exports = {
+  plugins: [
+    'truffle-plugin-verify'
+  ],
+  api_keys: {
+    bscscan: 'F9Q22WM1GUFG6US2QPS4GTZDT8J2J82NVK'
+  },
   networks: {
     development: {
       host: "127.0.0.1",

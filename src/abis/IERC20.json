@@ -1,35 +1,102 @@
 {
-  "contractName": "IAiRouter",
+  "contractName": "IERC20",
   "abi": [
     {
+      "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
           "internalType": "uint256",
-          "name": "taxAmount",
+          "name": "value",
           "type": "uint256"
         }
       ],
-      "name": "distributeTax",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "name": "Approval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Transfer",
+      "type": "event"
     },
     {
       "inputs": [],
-      "name": "isInSwap",
+      "name": "totalSupply",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "uint256",
           "name": "",
-          "type": "bool"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "supportsDistribureFunction",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "transfer",
       "outputs": [
         {
           "internalType": "bool",
@@ -37,31 +104,107 @@
           "type": "bool"
         }
       ],
-      "stateMutability": "pure",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "adr",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "spender",
           "type": "address"
         }
       ],
-      "name": "authorize",
-      "outputs": [],
+      "name": "allowance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "approve",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "liquifyBack",
-      "outputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "transferFrom",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "burnQuantity",
+          "type": "uint256"
+        }
+      ],
+      "name": "burn",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"adr\",\"type\":\"address\"}],\"name\":\"authorize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taxAmount\",\"type\":\"uint256\"}],\"name\":\"distributeTax\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isInSwap\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"liquifyBack\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"supportsDistribureFunction\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/src/contracts/AI.sol\":\"IAiRouter\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/src/contracts/AI.sol\":{\"keccak256\":\"0x39178083ab12fd6386394437df719ff8eb6e379da9d2b141bab4b6465e935f2f\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b24882671717b9c1305d489be9db369772a2e151c33b1530a513afc678294e7f\",\"dweb:/ipfs/QmeT95KP6wfdwcwcEy5hLfbiku3rzfYKXby3ebEEjQYToe\"]},\"project:/src/contracts/Auth.sol\":{\"keccak256\":\"0xddaed79d8e425b1a09a54d1e0e22b8f6c390dd07378f01b7ec7eac1f55deeb6b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a28a8bc9fea406166d0c081a73312d08cea188956d1bcfd6876626ba9260a104\",\"dweb:/ipfs/QmPTat1z8GLvnATMwpk3uakxnGv8AJMFhsubfrA9LznQTJ\"]},\"project:/src/contracts/IBEP20.sol\":{\"keccak256\":\"0x3c53e6e4ac8081ef029e7cb56bc63459aa3826269b67407065d12063230ba592\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6ff8b6ab95652909032331ab6c2a27bd29c051bd8ffa4866a5dc9657f13de33e\",\"dweb:/ipfs/QmdB5UikYg1fyBMis7nx17dV2o3t1BeHhS7knQQcGS3AkE\"]},\"project:/src/contracts/IDexFactory.sol\":{\"keccak256\":\"0x7fd54e106604009a9888ae468b94008e109ed4c698fd2240a23bd646b8db9829\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f87e6a6a42fb1928a7c74d206497022f5590cd93902edd8379e83a81d4c0deb8\",\"dweb:/ipfs/QmRfXprYr8kwGfJU2XP9boeWuLREELJGktrFCbyCA4rtFe\"]},\"project:/src/contracts/IDexRouter.sol\":{\"keccak256\":\"0x149082a58723b2669f04ab2a3d349798de24bce15c1da3a3dc9c62bc64ab31cc\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://644ee2c06dd922b0cbcad9ec404aa92a3d54d2f4d105c0600c7362f3f2ad228f\",\"dweb:/ipfs/QmWbLtMyi6NxYRNXsUt1GYkopXZ1DGtYpsS7wJXhwTeWhm\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"burnQuantity\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Interface of the ERC20 standard as defined in the EIP.\",\"events\":{\"Approval(address,address,uint256)\":{\"details\":\"Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `value` is the new allowance.\"},\"Transfer(address,address,uint256)\":{\"details\":\"Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero.\"}},\"kind\":\"dev\",\"methods\":{\"allowance(address,address)\":{\"details\":\"Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner` through {transferFrom}. This is zero by default. This value changes when {approve} or {transferFrom} are called.\"},\"approve(address,uint256)\":{\"details\":\"Sets `amount` as the allowance of `spender` over the caller's tokens. Returns a boolean value indicating whether the operation succeeded. IMPORTANT: Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729 Emits an {Approval} event.\"},\"balanceOf(address)\":{\"details\":\"Returns the amount of tokens owned by `account`.\"},\"totalSupply()\":{\"details\":\"Returns the amount of tokens in existence.\"},\"transfer(address,uint256)\":{\"details\":\"Moves `amount` tokens from the caller's account to `recipient`. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event.\"},\"transferFrom(address,address,uint256)\":{\"details\":\"Moves `amount` tokens from `sender` to `recipient` using the allowance mechanism. `amount` is then deducted from the caller's allowance. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"burn(uint256)\":{\"notice\":\"TODO: Add comment\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/src/contracts/AI.sol\":\"IERC20\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/src/contracts/AI.sol\":{\"keccak256\":\"0x39178083ab12fd6386394437df719ff8eb6e379da9d2b141bab4b6465e935f2f\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b24882671717b9c1305d489be9db369772a2e151c33b1530a513afc678294e7f\",\"dweb:/ipfs/QmeT95KP6wfdwcwcEy5hLfbiku3rzfYKXby3ebEEjQYToe\"]},\"project:/src/contracts/Auth.sol\":{\"keccak256\":\"0xddaed79d8e425b1a09a54d1e0e22b8f6c390dd07378f01b7ec7eac1f55deeb6b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a28a8bc9fea406166d0c081a73312d08cea188956d1bcfd6876626ba9260a104\",\"dweb:/ipfs/QmPTat1z8GLvnATMwpk3uakxnGv8AJMFhsubfrA9LznQTJ\"]},\"project:/src/contracts/IBEP20.sol\":{\"keccak256\":\"0x3c53e6e4ac8081ef029e7cb56bc63459aa3826269b67407065d12063230ba592\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6ff8b6ab95652909032331ab6c2a27bd29c051bd8ffa4866a5dc9657f13de33e\",\"dweb:/ipfs/QmdB5UikYg1fyBMis7nx17dV2o3t1BeHhS7knQQcGS3AkE\"]},\"project:/src/contracts/IDexFactory.sol\":{\"keccak256\":\"0x7fd54e106604009a9888ae468b94008e109ed4c698fd2240a23bd646b8db9829\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f87e6a6a42fb1928a7c74d206497022f5590cd93902edd8379e83a81d4c0deb8\",\"dweb:/ipfs/QmRfXprYr8kwGfJU2XP9boeWuLREELJGktrFCbyCA4rtFe\"]},\"project:/src/contracts/IDexRouter.sol\":{\"keccak256\":\"0x149082a58723b2669f04ab2a3d349798de24bce15c1da3a3dc9c62bc64ab31cc\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://644ee2c06dd922b0cbcad9ec404aa92a3d54d2f4d105c0600c7362f3f2ad228f\",\"dweb:/ipfs/QmWbLtMyi6NxYRNXsUt1GYkopXZ1DGtYpsS7wJXhwTeWhm\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -48313,15 +48456,47 @@
   },
   "networks": {},
   "schemaVersion": "3.4.1",
-  "updatedAt": "2021-10-09T08:25:25.147Z",
+  "updatedAt": "2021-10-09T08:25:25.241Z",
   "devdoc": {
+    "details": "Interface of the ERC20 standard as defined in the EIP.",
+    "events": {
+      "Approval(address,address,uint256)": {
+        "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `value` is the new allowance."
+      },
+      "Transfer(address,address,uint256)": {
+        "details": "Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero."
+      }
+    },
     "kind": "dev",
-    "methods": {},
+    "methods": {
+      "allowance(address,address)": {
+        "details": "Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner` through {transferFrom}. This is zero by default. This value changes when {approve} or {transferFrom} are called."
+      },
+      "approve(address,uint256)": {
+        "details": "Sets `amount` as the allowance of `spender` over the caller's tokens. Returns a boolean value indicating whether the operation succeeded. IMPORTANT: Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729 Emits an {Approval} event."
+      },
+      "balanceOf(address)": {
+        "details": "Returns the amount of tokens owned by `account`."
+      },
+      "totalSupply()": {
+        "details": "Returns the amount of tokens in existence."
+      },
+      "transfer(address,uint256)": {
+        "details": "Moves `amount` tokens from the caller's account to `recipient`. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
+      },
+      "transferFrom(address,address,uint256)": {
+        "details": "Moves `amount` tokens from `sender` to `recipient` using the allowance mechanism. `amount` is then deducted from the caller's allowance. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
+      }
+    },
     "version": 1
   },
   "userdoc": {
     "kind": "user",
-    "methods": {},
+    "methods": {
+      "burn(uint256)": {
+        "notice": "TODO: Add comment"
+      }
+    },
     "version": 1
   }
 }

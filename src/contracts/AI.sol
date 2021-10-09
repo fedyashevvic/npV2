@@ -432,14 +432,12 @@ contract AI is IBEP20, Auth {
 
   // Constants
   uint256 public constant SECONDS_IN_A_DAY = 86400;
-  uint256 public constant INITIAL_ALLOTMENT = 420000000000000000000;
   uint256 public constant emissionEnd = 1933606800;
   uint256 public constant aiSnapshot = 1632158133;
-  uint256 public constant denominator = 100;
 
   // Public variables
   uint256 public emissionPerDay = 2300000000000000000;
-  uint256 public MAX_EMISSION = 10000000000000000000;
+  uint256 private MAX_EMISSION_PER_DAY = 10000000000000000000;
   uint256 private _totalSupply;
 
 	mapping (address => uint256) _balances;
@@ -455,9 +453,9 @@ contract AI is IBEP20, Auth {
   bool public feeOnNonTrade = false;
 
   address public ai2bnb;
-  address public _pepeAddress = 0xdda79D8C0998a19ECa7fe6aAaBfCEe980E66F982;
-  address[] public pairs;
-  IDexRouter public router;
+  address private _pepeAddress = 0xdda79D8C0998a19ECa7fe6aAaBfCEe980E66F982;
+  address[] private pairs;
+  IDexRouter private router;
   INeuralPepe private PEPE = INeuralPepe(_pepeAddress);
 
   bool public swapEnabled = true;
@@ -528,12 +526,6 @@ contract AI is IBEP20, Auth {
   function basicTransfer(address recipient, uint256 amount) external override returns (bool) { return _basicTransfer(msg.sender, recipient, amount); }
 
 	function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
-
-    // if inSwap _basicTransfer
-    // launch
-    // take fee
-    // distribute tax, if needed liquify
-
 		require(amount > 0);
     address tradeAddress = returnTradeAddress(sender, recipient);
     bool isInSwap = IAiRouter(_taxAddresses[tradeAddress]).isInSwap();
@@ -559,7 +551,7 @@ contract AI is IBEP20, Auth {
     uint256 tax = amount.sub(amountReceived);
 
     if (shouldSwapBack(tradeAddress) && !isInSwap && tax > 0) {
-      IAiRouter(_taxAddresses[tradeAddress]).liquifyBack();
+      try IAiRouter(_taxAddresses[tradeAddress]).liquifyBack() {} catch {}
     }
 
     _balances[recipient] += amountReceived;
@@ -606,7 +598,7 @@ contract AI is IBEP20, Auth {
       _balances[_taxAddresses[tradeAddress]] += liqFee;
       emit Transfer(sender, _taxAddresses[tradeAddress], liqFee);
 
-      IAiRouter(_taxAddresses[tradeAddress]).distributeTax(liqFee);
+      try IAiRouter(_taxAddresses[tradeAddress]).distributeTax(liqFee) {} catch {}
     }
 
     return amount - liqFee;
@@ -630,83 +622,119 @@ contract AI is IBEP20, Auth {
 
 	// Recover any BNB sent to the contract by mistake.
 	function rescue() external {
-        payable(owner).transfer(address(this).balance);
-    }
+    payable(owner).transfer(address(this).balance);
+  }
 
 	function addPair(address pair, address taxAddress, uint256 _newTaxAmount) external authorized {
-      pairs.push(pair);
-      _taxAddresses[pair] = taxAddress;
-      _taxAmount[pair] = _newTaxAmount;
-      isFeeExempt[pair] = true;
+    pairs.push(pair);
+    _taxAddresses[pair] = taxAddress;
+    _taxAmount[pair] = _newTaxAmount;
+    isFeeExempt[pair] = true;
   }
     
   function removeLastPair() external authorized {
       pairs.pop();
   }
 
-      /**
-     * @dev When accumulated AIs have last been claimed for a Neural Pepe index
-     */
-    function lastClaim(uint256 tokenIndex) public view returns (uint256) {
-        require(PEPE.ownerOf(tokenIndex) != address(0), "Owner cannot be 0 address");
-        
-        uint256 lastClaimed = uint256(_lastClaim[tokenIndex]) != 0 ? uint256(_lastClaim[tokenIndex]) : aiSnapshot;
-        return lastClaimed;
+  /**
+    * @dev Only owner can call this function. Remove taxable address.
+  */
+  function removePair(address pairAddressToRemove) public onlyOwner {
+    require(_isTradeAddressExists(pairAddressToRemove), 'The address you try to remove doesnt exist');
+    uint addressIndex = _getAddressIndex(pairAddressToRemove).sub(1);
+
+    for (uint i = addressIndex; i < pairs.length - 1; i++) {
+      pairs[i] = pairs[pairs.length - 1];
     }
+    pairs.pop();
+  }
 
     /**
-     * @dev Accumulated AI tokens for a Neural Pepe token index.
-     */
-    function accumulated(uint256 tokenIndex) public view returns (uint256) {
-        require(PEPE.ownerOf(tokenIndex) != address(0), "Owner cannot be 0 address");
-        require(tokenIndex < PEPE.totalSupply(), "AI at index has not been minted yet");
-
-        uint256 lastClaimed = lastClaim(tokenIndex);
-
-        // Sanity check if last claim was on or after emission end
-        if (lastClaimed >= emissionEnd) return 0;
-
-        uint256 accumulationPeriod = block.timestamp < emissionEnd ? block.timestamp : emissionEnd; // Getting the min value of both
-        uint256 totalAccumulated = accumulationPeriod.sub(lastClaimed).mul(emissionPerDay).div(SECONDS_IN_A_DAY);
-
-        return totalAccumulated;
+    * @dev Internal functions.
+    */
+  function _isTradeAddressExists(address tradeAddress) private view returns (bool) {
+    if (pairs.length == 0) { return false; }
+    for(uint i = 0; i < pairs.length; i++) {
+      if (pairs[i] == tradeAddress) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    /**
-     * @dev Claim mints AIs and supports multiple Neural Pepe token indices at once.
-     */
-    function claim(uint256[] memory tokenIndices) public returns (uint256) {
-        uint256 totalClaimQty = 0;
-        for (uint i = 0; i < tokenIndices.length; i++) {
-            // Sanity check for non-minted index
-            require(tokenIndices[i] < PEPE.totalSupply(), "AI at index has not been minted yet");
-            // Duplicate token index check
-            for (uint j = i + 1; j < tokenIndices.length; j++) {
-                require(tokenIndices[i] != tokenIndices[j], "Duplicate token index");
-            }
-
-            uint tokenIndex = tokenIndices[i];
-            require(PEPE.ownerOf(tokenIndex) == msg.sender, "Sender is not the owner");
-
-            uint256 claimQty = accumulated(tokenIndex);
-            if (claimQty != 0) {
-                totalClaimQty = totalClaimQty.add(claimQty);
-                _lastClaim[tokenIndex] = block.timestamp;
-            }
-        }
-
-        require(totalClaimQty != 0, "No accumulated AI");
-        _mint(msg.sender, totalClaimQty);
-        return totalClaimQty;
+  function _getAddressIndex(address tradeAddress) private view returns (uint) {
+    for(uint i = 0; i < pairs.length; i++) {
+      if (pairs[i] == tradeAddress) {
+        return i.add(1);
+      }
     }
+    return 0;
+  }
 
-    /**
-     * @dev Only owner can call this function. Change AI emission per day.
-     */
-    function changeEmissionPerDay(uint256 _newEmissionPerDay) public onlyOwner {
-      require(_newEmissionPerDay >= 0 || _newEmissionPerDay <= MAX_EMISSION, 'invalid emission per day');
-      emissionPerDay = _newEmissionPerDay;
-    }
+
+  /**
+  * @dev When accumulated AIs have last been claimed for a Neural Pepe index
+  */
+  function lastClaim(uint256 tokenIndex) public view returns (uint256) {
+      require(PEPE.ownerOf(tokenIndex) != address(0), "Owner cannot be 0 address");
+      
+      uint256 lastClaimed = uint256(_lastClaim[tokenIndex]) != 0 ? uint256(_lastClaim[tokenIndex]) : aiSnapshot;
+      return lastClaimed;
+  }
+
+  /**
+    * @dev Accumulated AI tokens for a Neural Pepe token index.
+    */
+  function accumulated(uint256 tokenIndex) public view returns (uint256) {
+      require(PEPE.ownerOf(tokenIndex) != address(0), "Owner cannot be 0 address");
+      require(tokenIndex < PEPE.totalSupply(), "AI at index has not been minted yet");
+
+      uint256 lastClaimed = lastClaim(tokenIndex);
+
+      // Sanity check if last claim was on or after emission end
+      if (lastClaimed >= emissionEnd) return 0;
+
+      uint256 accumulationPeriod = block.timestamp < emissionEnd ? block.timestamp : emissionEnd; // Getting the min value of both
+      uint256 totalAccumulated = accumulationPeriod.sub(lastClaimed).mul(emissionPerDay).div(SECONDS_IN_A_DAY);
+
+      return totalAccumulated;
+  }
+
+  /**
+    * @dev Claim mints AIs and supports multiple Neural Pepe token indices at once.
+    */
+  function claim(uint256[] memory tokenIndices) public returns (uint256) {
+      uint256 totalClaimQty = 0;
+      for (uint i = 0; i < tokenIndices.length; i++) {
+          // Sanity check for non-minted index
+          require(tokenIndices[i] < PEPE.totalSupply(), "AI at index has not been minted yet");
+          // Duplicate token index check
+          for (uint j = i + 1; j < tokenIndices.length; j++) {
+              require(tokenIndices[i] != tokenIndices[j], "Duplicate token index");
+          }
+
+          uint tokenIndex = tokenIndices[i];
+          require(PEPE.ownerOf(tokenIndex) == msg.sender, "Sender is not the owner");
+
+          uint256 claimQty = accumulated(tokenIndex);
+          if (claimQty != 0) {
+              totalClaimQty = totalClaimQty.add(claimQty);
+              _lastClaim[tokenIndex] = block.timestamp;
+          }
+      }
+
+      require(totalClaimQty != 0, "No accumulated AI");
+      _mint(msg.sender, totalClaimQty);
+      return totalClaimQty;
+  }
+
+  /**
+    * @dev Only owner can call this function. Change AI emission per day.
+    */
+  function changeEmissionPerDay(uint256 _newEmissionPerDay) public onlyOwner {
+    require(_newEmissionPerDay >= 0 || _newEmissionPerDay <= MAX_EMISSION_PER_DAY, 'invalid emission per day');
+    emissionPerDay = _newEmissionPerDay;
+  }
 
   /**
   * @dev Only owner can call this function. Tax amount, can be between 1 and 20.

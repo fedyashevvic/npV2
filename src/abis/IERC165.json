@@ -1,22 +1,15 @@
 {
-  "contractName": "IAiRouter",
+  "contractName": "IERC165",
   "abi": [
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "taxAmount",
-          "type": "uint256"
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
         }
       ],
-      "name": "distributeTax",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "isInSwap",
+      "name": "supportsInterface",
       "outputs": [
         {
           "internalType": "bool",
@@ -26,42 +19,9 @@
       ],
       "stateMutability": "view",
       "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "supportsDistribureFunction",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "adr",
-          "type": "address"
-        }
-      ],
-      "name": "authorize",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "liquifyBack",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"adr\",\"type\":\"address\"}],\"name\":\"authorize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"taxAmount\",\"type\":\"uint256\"}],\"name\":\"distributeTax\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isInSwap\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"liquifyBack\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"supportsDistribureFunction\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/src/contracts/AI.sol\":\"IAiRouter\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/src/contracts/AI.sol\":{\"keccak256\":\"0x39178083ab12fd6386394437df719ff8eb6e379da9d2b141bab4b6465e935f2f\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b24882671717b9c1305d489be9db369772a2e151c33b1530a513afc678294e7f\",\"dweb:/ipfs/QmeT95KP6wfdwcwcEy5hLfbiku3rzfYKXby3ebEEjQYToe\"]},\"project:/src/contracts/Auth.sol\":{\"keccak256\":\"0xddaed79d8e425b1a09a54d1e0e22b8f6c390dd07378f01b7ec7eac1f55deeb6b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a28a8bc9fea406166d0c081a73312d08cea188956d1bcfd6876626ba9260a104\",\"dweb:/ipfs/QmPTat1z8GLvnATMwpk3uakxnGv8AJMFhsubfrA9LznQTJ\"]},\"project:/src/contracts/IBEP20.sol\":{\"keccak256\":\"0x3c53e6e4ac8081ef029e7cb56bc63459aa3826269b67407065d12063230ba592\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6ff8b6ab95652909032331ab6c2a27bd29c051bd8ffa4866a5dc9657f13de33e\",\"dweb:/ipfs/QmdB5UikYg1fyBMis7nx17dV2o3t1BeHhS7knQQcGS3AkE\"]},\"project:/src/contracts/IDexFactory.sol\":{\"keccak256\":\"0x7fd54e106604009a9888ae468b94008e109ed4c698fd2240a23bd646b8db9829\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f87e6a6a42fb1928a7c74d206497022f5590cd93902edd8379e83a81d4c0deb8\",\"dweb:/ipfs/QmRfXprYr8kwGfJU2XP9boeWuLREELJGktrFCbyCA4rtFe\"]},\"project:/src/contracts/IDexRouter.sol\":{\"keccak256\":\"0x149082a58723b2669f04ab2a3d349798de24bce15c1da3a3dc9c62bc64ab31cc\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://644ee2c06dd922b0cbcad9ec404aa92a3d54d2f4d105c0600c7362f3f2ad228f\",\"dweb:/ipfs/QmWbLtMyi6NxYRNXsUt1GYkopXZ1DGtYpsS7wJXhwTeWhm\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Interface of the ERC165 standard, as defined in the https://eips.ethereum.org/EIPS/eip-165[EIP]. Implementers can declare support of contract interfaces, which can then be queried by others ({ERC165Checker}). For an implementation, see {ERC165}.\",\"kind\":\"dev\",\"methods\":{\"supportsInterface(bytes4)\":{\"details\":\"Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created. This function call must use less than 30 000 gas.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/src/contracts/AI.sol\":\"IERC165\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/src/contracts/AI.sol\":{\"keccak256\":\"0x39178083ab12fd6386394437df719ff8eb6e379da9d2b141bab4b6465e935f2f\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b24882671717b9c1305d489be9db369772a2e151c33b1530a513afc678294e7f\",\"dweb:/ipfs/QmeT95KP6wfdwcwcEy5hLfbiku3rzfYKXby3ebEEjQYToe\"]},\"project:/src/contracts/Auth.sol\":{\"keccak256\":\"0xddaed79d8e425b1a09a54d1e0e22b8f6c390dd07378f01b7ec7eac1f55deeb6b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a28a8bc9fea406166d0c081a73312d08cea188956d1bcfd6876626ba9260a104\",\"dweb:/ipfs/QmPTat1z8GLvnATMwpk3uakxnGv8AJMFhsubfrA9LznQTJ\"]},\"project:/src/contracts/IBEP20.sol\":{\"keccak256\":\"0x3c53e6e4ac8081ef029e7cb56bc63459aa3826269b67407065d12063230ba592\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6ff8b6ab95652909032331ab6c2a27bd29c051bd8ffa4866a5dc9657f13de33e\",\"dweb:/ipfs/QmdB5UikYg1fyBMis7nx17dV2o3t1BeHhS7knQQcGS3AkE\"]},\"project:/src/contracts/IDexFactory.sol\":{\"keccak256\":\"0x7fd54e106604009a9888ae468b94008e109ed4c698fd2240a23bd646b8db9829\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f87e6a6a42fb1928a7c74d206497022f5590cd93902edd8379e83a81d4c0deb8\",\"dweb:/ipfs/QmRfXprYr8kwGfJU2XP9boeWuLREELJGktrFCbyCA4rtFe\"]},\"project:/src/contracts/IDexRouter.sol\":{\"keccak256\":\"0x149082a58723b2669f04ab2a3d349798de24bce15c1da3a3dc9c62bc64ab31cc\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://644ee2c06dd922b0cbcad9ec404aa92a3d54d2f4d105c0600c7362f3f2ad228f\",\"dweb:/ipfs/QmWbLtMyi6NxYRNXsUt1GYkopXZ1DGtYpsS7wJXhwTeWhm\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -48313,10 +48273,15 @@
   },
   "networks": {},
   "schemaVersion": "3.4.1",
-  "updatedAt": "2021-10-09T08:25:25.147Z",
+  "updatedAt": "2021-10-09T08:25:25.196Z",
   "devdoc": {
+    "details": "Interface of the ERC165 standard, as defined in the https://eips.ethereum.org/EIPS/eip-165[EIP]. Implementers can declare support of contract interfaces, which can then be queried by others ({ERC165Checker}). For an implementation, see {ERC165}.",
     "kind": "dev",
-    "methods": {},
+    "methods": {
+      "supportsInterface(bytes4)": {
+        "details": "Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created. This function call must use less than 30 000 gas."
+      }
+    },
     "version": 1
   },
   "userdoc": {

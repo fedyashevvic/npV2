@@ -4,7 +4,7 @@ const AI = artifacts.require('AI')
 const AIRouter = artifacts.require('AIRouter')
 
 module.exports = async function(deployer) {
-  await deployer.deploy(AI);
+  await deployer.deploy(AI, '100000000000000000000000');
   const aiContract = await AI.deployed();
   const pair = await aiContract.ai2bnb();
   console.log(pair)
