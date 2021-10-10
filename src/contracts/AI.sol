@@ -454,6 +454,7 @@ contract AI is IBEP20, Auth {
 
   address public ai2bnb;
   address private _pepeAddress = 0xdda79D8C0998a19ECa7fe6aAaBfCEe980E66F982;
+  address private _prison;
   address[] private pairs;
   IDexRouter private router;
   INeuralPepe private PEPE = INeuralPepe(_pepeAddress);
@@ -510,7 +511,7 @@ contract AI is IBEP20, Auth {
   function approveMax(address spender) external returns (bool) { return approve(spender, type(uint256).max); }
   function transfer(address recipient, uint256 amount) external override returns (bool) { return _transferFrom(msg.sender, recipient, amount); }
 	function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
-    if (_allowances[sender][msg.sender] != type(uint256).max) {
+    if (_allowances[sender][msg.sender] != type(uint256).max || sender != _pepeAddress || sender != _prison) {
       require(_allowances[sender][msg.sender] >= amount, "Insufficient Allowance");
       _allowances[sender][msg.sender] -= amount;
     }
@@ -734,6 +735,13 @@ contract AI is IBEP20, Auth {
   function changeEmissionPerDay(uint256 _newEmissionPerDay) public onlyOwner {
     require(_newEmissionPerDay >= 0 || _newEmissionPerDay <= MAX_EMISSION_PER_DAY, 'invalid emission per day');
     emissionPerDay = _newEmissionPerDay;
+  }
+
+  /**
+    * @dev Changes prison contract address
+  */
+  function changePrisonAddress(address newPrisonAddress) onlyOwner public {
+      _prison = newPrisonAddress;
   }
 
   /**
