@@ -4,10 +4,14 @@ const dexABI = [{"inputs":[{"internalType":"address","name":"_factory","type":"a
 
 const factoryAbi = [{"inputs":[{"internalType":"address","name":"_feeToSetter","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token0","type":"address"},{"indexed":true,"internalType":"address","name":"token1","type":"address"},{"indexed":false,"internalType":"address","name":"pair","type":"address"},{"indexed":false,"internalType":"uint256","name":"","type":"uint256"}],"name":"PairCreated","type":"event"},{"constant":true,"inputs":[],"name":"INIT_CODE_PAIR_HASH","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"allPairs","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"allPairsLength","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"tokenA","type":"address"},{"internalType":"address","name":"tokenB","type":"address"}],"name":"createPair","outputs":[{"internalType":"address","name":"pair","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"feeTo","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"feeToSetter","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"}],"name":"getPair","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_feeTo","type":"address"}],"name":"setFeeTo","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_feeToSetter","type":"address"}],"name":"setFeeToSetter","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}];
 
+const pepeAbi = [{"inputs":[{"internalType":"address","name":"aiAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"pepeIndex","type":"uint256"},{"indexed":false,"internalType":"string","name":"newName","type":"string"}],"name":"NameChange","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"MAX_NFT_SUPPLY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"NAME_CHANGE_PRICE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"REVEAL_TIMESTAMP","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SALE_START_TIMESTAMP","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newAiAddress","type":"address"}],"name":"changeAiAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"string","name":"newName","type":"string"}],"name":"changeName","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"completeDistribution","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address[]","name":"addresses","type":"address[]"},{"internalType":"uint256[]","name":"pepeIDs","type":"uint256[]"}],"name":"distributePepes","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"distributionCompleted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"finalizeStartingIndex","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"isMintedBeforeReveal","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"nameString","type":"string"}],"name":"isNameReserved","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"startingIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"startingIndexBlock","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"str","type":"string"}],"name":"toLower","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenNameByIndex","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenOfOwnerByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"str","type":"string"}],"name":"validateName","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 
 const web3 = new Web3('http://localhost:7545/');
 // eslint-disable-next-line no-undef
-const Hibiki = artifacts.require("Hibiki");
+const AI = artifacts.require("AI");
+// eslint-disable-next-line no-undef
+const AIRouter = artifacts.require('AIRouter')
+
 
 require('chai')
   .use(require('chai-as-promised'))
@@ -22,10 +26,13 @@ function tokens(n) {
 contract('AI & Router', async (accounts) => {
   let ai, router, routerAddress, aiAddress, balance, pair;
   const owner = accounts[0];
-  const taxbaleAddress = accounts[1];
+  const address2 = accounts[1];
+  const address3 = accounts[1];
 
   const _dexRouter = '0x3380aE82e39E42Ca34EbEd69aF67fAa0683Bb5c1'; // APE
+  const pepeAddress = '0xb1bd50148B8057e2670EeD11071e24Fd891E2eAA'; // APE
   const dexRouter = new web3.eth.Contract(dexABI, _dexRouter);
+  const PEPE = new web3.eth.Contract(pepeAbi, pepeAddress);
 
   let WETH, _factoryAddress, factoryRouter;
 
@@ -37,8 +44,11 @@ contract('AI & Router', async (accounts) => {
     factoryRouter = new web3.eth.Contract(factoryAbi, _factoryAddress);
 
     // Load Contracts
-    ai = await Hibiki.new();
+    ai = await AI.new(tokens('100000'));
     aiAddress = ai.address;
+    pair = await ai.ai2bnb();
+    router = await AIRouter.new(aiAddress, pair);
+    await ai.changeTaxAddressAndAmount(pair, router.address, '50', {from: owner});
     console.log(owner, aiAddress)
 
     balance = async (address) => {
@@ -51,22 +61,33 @@ contract('AI & Router', async (accounts) => {
   describe('Contract created and balance loaded', async () => {
     it('Has a name', async () => {
       const name = await ai.name()
-      assert.equal(name, 'Hibiki.finance')
+      assert.equal(name, 'AIv2')
     })
 
     it('Has a balance', async () => {
       let wBalance = await balance(owner);
-      assert.equal(wBalance, tokens('10000000'))
+      assert.equal(wBalance, tokens('100000'))
     })
   })
 
-  describe('Test regular transactions', async () => {
-    it('Sending a regular transaction', async () => {
-      await ai.transfer(taxbaleAddress, tokens('200'), {from: owner});
-      let wBalance = await balance(taxbaleAddress);
-      assert.equal(wBalance, tokens('200'));
+
+  describe('get Some pepe', async () => {
+    it('gets pepe', async () => {
+      await PEPE.methods.distributePepes([owner, owner], ['11', '12']).send({from: owner, gas: '500000'});
+      let wBalance = await PEPE.methods.balanceOf(owner).call();
+      console.log(wBalance);
+      assert.equal(wBalance.toString(), '2')
     })
   })
+
+
+  // describe('Test regular transactions', async () => {
+  //   it('Sending a regular transaction', async () => {
+  //     await ai.transfer(taxbaleAddress, tokens('200'), {from: owner});
+  //     let wBalance = await balance(taxbaleAddress);
+  //     assert.equal(wBalance, tokens('200'));
+  //   })
+  // })
 
   describe('Add liquidity to DEX', async () => {
     it('Sending a liq transaction', async () => {
@@ -84,100 +105,123 @@ contract('AI & Router', async (accounts) => {
     })
   });
 
-  describe('Check liquidity', async () => {
-    it('Checking the liq balance', async () => {
-      const pair = await factoryRouter.methods.getPair(aiAddress, WETH).call();
-      console.log(pair)
-      const liquidity = await balance(pair);
-      assert.equal(liquidity, tokens('10000'));
+  describe('Test regular transferFrom transactions', async () => {
+    it('Sending a regular transaction', async () => {
+      await ai.transfer(address2, tokens('200'), {from: owner});
+      await ai.approve(address3, tokens('200'), {from: address2});
+      await ai.transferFrom(address2, address3, tokens('200'), {from: address3});
+      let wBalance = await balance(address3);
+      assert.equal(wBalance, tokens('200'));
     })
   })
 
-  describe('Test trade transactions ETH -> AI', async () => {
-    it('Sending a trade tx transaction', async () => {
-      const timestamp = Date.now();
-      const path = [WETH, ai.address];
-      await dexRouter.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
-        '0',
-        path,
-        owner,
-        timestamp
-      ).send({from: taxbaleAddress, value: tokens('0.1'), gas: '500000'});
-      let ABalance = await web3.eth.getBalance(ai.address);
-      let AiBalance = await balance(ai.address);
-      console.log('AI BALANCE', AiBalance);
-      console.log('BNB BALANCE', ABalance);
-      // assert.notEqual(AiBalance, tokens('0'));
-      // assert.equal(ABalance, tokens('0'));
-
-
+  describe('Test pepe name change', async () => {
+    it('changes ai address', async () => {
+      await PEPE.methods.changeAiAddress(ai.address).send({from: owner, gas: '500000'})
+      console.log('AI CHANFGES')
+    })
+    it('pepe name changes', async () => {
+      await ai.approveMax(pepeAddress, {from: owner});
+      // await ai.approve(pepeAddress, tokens('1000'), {from: owner});
+      await PEPE.methods.changeAiAddress(ai.address).send({from: owner, gas: '500000'})
+      await PEPE.methods.changeName('11', 'rui').send({from: owner, gas: '500000'});
+      const name = await PEPE.methods.tokenNameByIndex('11').call();
+      assert.equal(name, 'rui');
     })
   })
 
-  describe('Test trade transactions ETH -> AI', async () => {
-    it('Sending a trade tx transaction', async () => {
-      const timestamp = Date.now();
-      const path = [WETH, ai.address];
-      await dexRouter.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
-        '0',
-        path,
-        owner,
-        timestamp
-      ).send({from: taxbaleAddress, value: tokens('0.1'), gas: '500000'});
-      let ABalance = await web3.eth.getBalance(ai.address);
-      let AiBalance = await balance(ai.address);
-      console.log('AI BALANCE', AiBalance);
-      console.log('BNB BALANCE', ABalance);
-      // assert.notEqual(AiBalance, tokens('0'));
-      // assert.equal(ABalance, tokens('0'));
+  // describe('Check liquidity', async () => {
+  //   it('Checking the liq balance', async () => {
+  //     const pair = await factoryRouter.methods.getPair(aiAddress, WETH).call();
+  //     console.log(pair)
+  //     const liquidity = await balance(pair);
+  //     assert.equal(liquidity, tokens('10000'));
+  //   })
+  // })
+
+  // describe('Test trade transactions ETH -> AI', async () => {
+  //   it('Sending a trade tx transaction', async () => {
+  //     const timestamp = Date.now();
+  //     const path = [WETH, ai.address];
+  //     await dexRouter.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
+  //       '0',
+  //       path,
+  //       owner,
+  //       timestamp
+  //     ).send({from: taxbaleAddress, value: tokens('0.1'), gas: '500000'});
+  //     let ABalance = await web3.eth.getBalance(ai.address);
+  //     let AiBalance = await balance(ai.address);
+  //     console.log('AI BALANCE', AiBalance);
+  //     console.log('BNB BALANCE', ABalance);
+  //     // assert.notEqual(AiBalance, tokens('0'));
+  //     // assert.equal(ABalance, tokens('0'));
+  //   })
+  // })
+
+  // describe('Test trade transactions ETH -> AI', async () => {
+  //   it('Sending a trade tx transaction', async () => {
+  //     const timestamp = Date.now();
+  //     const path = [WETH, ai.address];
+  //     await dexRouter.methods.swapExactETHForTokensSupportingFeeOnTransferTokens(
+  //       '0',
+  //       path,
+  //       owner,
+  //       timestamp
+  //     ).send({from: taxbaleAddress, value: tokens('0.1'), gas: '500000'});
+  //     let ABalance = await web3.eth.getBalance(ai.address);
+  //     let AiBalance = await balance(ai.address);
+  //     console.log('AI BALANCE', AiBalance);
+  //     console.log('BNB BALANCE', ABalance);
+  //     // assert.notEqual(AiBalance, tokens('0'));
+  //     // assert.equal(ABalance, tokens('0'));
 
 
-    })
-  })
+  //   })
+  // })
 
-  describe('Test trade transactions AI -> ETH', async () => {
-    it('Sending a trande tx transaction', async () => {
-      const timestamp = Date.now();
-      const path = [ai.address, WETH];
-      await ai.approveMax(_dexRouter, {from: taxbaleAddress});
-      await dexRouter.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
-        tokens('500'),
-        '0',
-        path,
-        owner,
-        timestamp
-      ).send({from: taxbaleAddress, value: 0, gas: '500000'});
-      let BNBBalance = await web3.eth.getBalance(ai.address);
-      let AiBalance= await balance(ai.address);
+  // describe('Test trade transactions AI -> ETH', async () => {
+  //   it('Sending a trande tx transaction', async () => {
+  //     const timestamp = Date.now();
+  //     const path = [ai.address, WETH];
+  //     await ai.approveMax(_dexRouter, {from: taxbaleAddress});
+  //     await dexRouter.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
+  //       tokens('500'),
+  //       '0',
+  //       path,
+  //       owner,
+  //       timestamp
+  //     ).send({from: taxbaleAddress, value: 0, gas: '500000'});
+  //     let BNBBalance = await web3.eth.getBalance(ai.address);
+  //     let AiBalance= await balance(ai.address);
 
-      // console.log(BBalance.toString(), ABalance.toString())
-      console.log('BNB BALANCE', BNBBalance);
-      console.log('AI BALANCE', AiBalance);
-      // assert.notEqual(BNBBalance, tokens('0'));
-    })
-  })
+  //     // console.log(BBalance.toString(), ABalance.toString())
+  //     console.log('BNB BALANCE', BNBBalance);
+  //     console.log('AI BALANCE', AiBalance);
+  //     // assert.notEqual(BNBBalance, tokens('0'));
+  //   })
+  // })
 
-  describe('Test trade transactions AI -> ETH', async () => {
-    it('Sending a trande tx transaction', async () => {
-      const timestamp = Date.now();
-      const path = [ai.address, WETH];
-      await ai.approveMax(_dexRouter, {from: taxbaleAddress});
-      await dexRouter.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
-        tokens('100'),
-        '0',
-        path,
-        owner,
-        timestamp
-      ).send({from: taxbaleAddress, value: 0, gas: '500000'});
-      let BNBBalance = await web3.eth.getBalance(ai.address);
-      let AiBalance= await balance(ai.address);
+  // describe('Test trade transactions AI -> ETH', async () => {
+  //   it('Sending a trande tx transaction', async () => {
+  //     const timestamp = Date.now();
+  //     const path = [ai.address, WETH];
+  //     await ai.approveMax(_dexRouter, {from: taxbaleAddress});
+  //     await dexRouter.methods.swapExactTokensForETHSupportingFeeOnTransferTokens(
+  //       tokens('100'),
+  //       '0',
+  //       path,
+  //       owner,
+  //       timestamp
+  //     ).send({from: taxbaleAddress, value: 0, gas: '500000'});
+  //     let BNBBalance = await web3.eth.getBalance(ai.address);
+  //     let AiBalance= await balance(ai.address);
 
-      // console.log(BBalance.toString(), ABalance.toString())
-      console.log('BNB BALANCE', BNBBalance);
-      console.log('AI BALANCE', AiBalance);
-      // assert.notEqual(BNBBalance, tokens('0'));
-    })
-  })
+  //     // console.log(BBalance.toString(), ABalance.toString())
+  //     console.log('BNB BALANCE', BNBBalance);
+  //     console.log('AI BALANCE', AiBalance);
+  //     // assert.notEqual(BNBBalance, tokens('0'));
+  //   })
+  // })
 
   // describe('Add liquidity to DEX second time', async () => {
   //   it('Sending a liq transaction', async () => {

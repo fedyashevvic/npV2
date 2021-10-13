@@ -22,15 +22,15 @@ contract AIRouter {
   uint256 private target = 30;
   uint256 public swapThreshold = 20 * (10 ** 18); // 100 TOKENS
   
-  uint256 private liqTaxShare = 50;
-  uint256 private treasuryTaxShare = 20;
-  uint256 private rewardTaxShare = 20;
-  uint256 private devTaxShare = 10;
+  uint256 public liqTaxShare = 50;
+  uint256 public treasuryTaxShare = 20;
+  uint256 public rewardTaxShare = 20;
+  uint256 public devTaxShare = 10;
 
-  uint256 private liqRoyaltyShare = 20;
-  uint256 private treasuryRoyaltyShare = 30;
-  uint256 private rewardRoyaltyShare = 40;
-  uint256 private devRoyaltyShare = 10;
+  uint256 public liqRoyaltyShare = 20;
+  uint256 public treasuryRoyaltyShare = 30;
+  uint256 public rewardRoyaltyShare = 40;
+  uint256 public devRoyaltyShare = 10;
 
   uint256 public liqBalance = 0;
   uint256 public rewardBalance = 0;
@@ -73,6 +73,13 @@ contract AIRouter {
   */
   modifier onlyOwner() {
     require(msg.sender == contractOwner, "!OWNER"); _;
+  }
+
+  /**
+  * Function modifier to require caller to be AI contract
+  */
+  modifier onlyAi() {
+    require(msg.sender == _aiTokenAddress, "!AI"); _;
   }
 
   /**
@@ -181,7 +188,7 @@ contract AIRouter {
     uint256 bnbToDev = _calculateShare(receivedAmount, devRoyaltyShare);
 
     liqBalance += aiForLiq;
-    aiContract.basicTransfer(treasuryAddress, toAiTreasury);
+    aiContract.transfer(treasuryAddress, toAiTreasury);
 
     _distributeFees(bnbToReward, bnbToDev);
 
@@ -189,7 +196,7 @@ contract AIRouter {
   }
   
   // not finalised, waiting for the final calculations schema
-  function distributeTax(uint256 amount) external {
+  function distributeTax(uint256 amount) external onlyAi {
     if (amount > 0) {
       uint256 aiForLiq = _calculateShare(amount, liqTaxShare);
       uint256 aiForRewards = _calculateShare(amount, rewardTaxShare);
@@ -203,8 +210,8 @@ contract AIRouter {
     }
   }
   
-  function liquifyBack() external {
-    aiContract.basicTransfer(treasuryAddress, treasuryBalance);
+  function liquifyBack() external onlyAi {
+    aiContract.transfer(treasuryAddress, treasuryBalance);
     treasuryBalance = 0;
       
     if (_shouldSwapBack()) { liquify(); }
@@ -229,32 +236,50 @@ contract AIRouter {
     require(shareSum == 100, "Total shares amount should be 100");
   }
 
-  function changeTaxShares(uint256[] memory shares) public onlyOwner {
-    require(shares.length == 4, 'Wrong number of shares provided');
-    _validateShares(shares);
-
-    liqTaxShare = shares[0];
-    treasuryTaxShare = shares[1];
-    rewardTaxShare = shares[2];
-    devTaxShare = shares[3];
+  function changeLiqTaxShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    liqTaxShare = share;
+  }
+  function changeTreasuryTaxShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    treasuryTaxShare = share;
+  }
+  function changeRewardTaxShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    rewardTaxShare = share;
+  }
+  function changeDevTaxShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    devTaxShare = share;
   }
 
-  function changeRoyaltyShares(uint256[] memory shares) public onlyOwner {
-    require(shares.length == 4, 'Wrong number of shares provided');
-    _validateShares(shares);
-
-    liqRoyaltyShare = shares[0];
-    treasuryRoyaltyShare = shares[1];
-    rewardRoyaltyShare = shares[2];
-    devRoyaltyShare = shares[3];
+  function changeLiqRoyaltyShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    liqRoyaltyShare = share;
+  }
+  function changeTreasuryRoyaltyShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    treasuryRoyaltyShare = share;
+  }
+  function changeRewardRoyaltyShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    rewardRoyaltyShare = share;
+  }
+  function changeDevRoyaltyShare(uint256 share) public onlyOwner {
+    require(share <= 100, 'cannot be more than 100');
+    devRoyaltyShare = share;
   }
 
-  function changeDistributionAddresses(address[] memory addreses) public onlyOwner {
-    require(addreses.length == 3, 'Wrong number of wallets provided');
+  function changeRewardAddress(address addr) public onlyOwner {
+    rewardsBNBPool = addr;
+  }
 
-    rewardsBNBPool = addreses[0];
-    devBNBPool = addreses[1];
-    treasuryAddress = addreses[2];
+  function changeDevAddress(address addr) public onlyOwner {
+    devBNBPool = addr;
+  }
+
+  function changeTreasuryAddress(address addr) public onlyOwner {
+    treasuryAddress = addr;
   }
 
   function changeSwapThresholdAmount(uint256 newValue) public onlyOwner {
@@ -299,7 +324,7 @@ contract AIRouter {
   function authorize(address adr) public onlyOwner {
       authorizations[adr] = true;
   }
-
+  
   /**
     * Remove address' authorization. Owner only
     */

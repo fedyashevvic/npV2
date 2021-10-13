@@ -450,11 +450,9 @@ contract AI is IBEP20, Auth {
 
   // Fees. Some may be completely inactive at all times.
   uint256 feeDenominator = 1000;
-  bool public feeOnNonTrade = false;
 
   address public ai2bnb;
-  address private _pepeAddress = 0xdda79D8C0998a19ECa7fe6aAaBfCEe980E66F982;
-  address private _prison;
+  address private _pepeAddress = 0xa16b13cdFee9a134d17957Bef09dC3B5a4FddC1B;
   address[] private pairs;
   IDexRouter private router;
   INeuralPepe private PEPE = INeuralPepe(_pepeAddress);
@@ -511,7 +509,7 @@ contract AI is IBEP20, Auth {
   function approveMax(address spender) external returns (bool) { return approve(spender, type(uint256).max); }
   function transfer(address recipient, uint256 amount) external override returns (bool) { return _transferFrom(msg.sender, recipient, amount); }
 	function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
-    if (_allowances[sender][msg.sender] != type(uint256).max || sender != _pepeAddress || sender != _prison) {
+    if (_allowances[sender][msg.sender] != type(uint256).max) {
       require(_allowances[sender][msg.sender] >= amount, "Insufficient Allowance");
       _allowances[sender][msg.sender] -= amount;
     }
@@ -524,14 +522,14 @@ contract AI is IBEP20, Auth {
         emit Transfer(sender, recipient, amount);
         return true;
   }
-  function basicTransfer(address recipient, uint256 amount) external override returns (bool) { return _basicTransfer(msg.sender, recipient, amount); }
+  // function basicTransfer(address recipient, uint256 amount) external override returns (bool) { return _basicTransfer(msg.sender, recipient, amount); }
 
 	function _transferFrom(address sender, address recipient, uint256 amount) internal returns (bool) {
 		require(amount > 0);
     address tradeAddress = returnTradeAddress(sender, recipient);
-    bool isInSwap = IAiRouter(_taxAddresses[tradeAddress]).isInSwap();
+    bool isInSwap = tradeAddress != address(0) ? IAiRouter(_taxAddresses[tradeAddress]).isInSwap() : true;
 
-    if (isInSwap) {
+    if (isInSwap || tradeAddress == address(0)) {
       return _basicTransfer(sender, recipient, amount);
     }
 
@@ -585,7 +583,7 @@ contract AI is IBEP20, Auth {
       }
     }
 
-    return feeOnNonTrade;
+    return false;
     }
 
 	function takeFee(address sender, uint256 amount, address tradeAddress) internal returns (uint256) {
@@ -737,12 +735,6 @@ contract AI is IBEP20, Auth {
     emissionPerDay = _newEmissionPerDay;
   }
 
-  /**
-    * @dev Changes prison contract address
-  */
-  function changePrisonAddress(address newPrisonAddress) onlyOwner public {
-      _prison = newPrisonAddress;
-  }
 
   /**
   * @dev Only owner can call this function. Tax amount, can be between 1 and 20.
