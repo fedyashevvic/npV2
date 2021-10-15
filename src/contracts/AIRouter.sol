@@ -20,7 +20,7 @@ contract AIRouter {
 
   uint256 private accuracy = 100;
   uint256 private target = 30;
-  uint256 public swapThreshold = 20 * (10 ** 18); // 100 TOKENS
+  uint256 public swapThreshold = 500 * (10 ** 18); // 500 TOKENS
   
   uint256 public liqTaxShare = 50;
   uint256 public treasuryTaxShare = 20;
@@ -57,7 +57,7 @@ contract AIRouter {
 
   receive() external payable {
     if (!inSwap) {
-      _distributeRoyalties();
+      _distributeRoyalties(); 
     }
   }
   
@@ -154,13 +154,15 @@ contract AIRouter {
   }
 
   function liquify() internal swapping {
-    uint256 aiForLiqToSwap = isOverLiquified() ? liqBalance : liqBalance.div(2);
-    uint256 aiToSwap = aiForLiqToSwap.add(rewardBalance).add(devBalance);
+    uint256 aiForLiqToSwap = isOverLiquified() ? swapThreshold : swapThreshold.div(2);
+    uint256 rewardToSwap = rewardBalance.mul(swapThreshold).div(liqBalance);
+    uint256 devToSwap = devBalance.mul(swapThreshold).div(liqBalance);
+    uint256 aiToSwap = aiForLiqToSwap.add(rewardToSwap).add(devToSwap);
 
     uint256 bnbReceived = _swapAI(aiToSwap, address(this));
     uint256 bnbForLiq = bnbReceived.mul(aiForLiqToSwap).div(aiToSwap);
-    uint256 bnbForRewards = bnbReceived.mul(rewardBalance).div(aiToSwap);
-    uint256 bnbForDev = bnbReceived.mul(devBalance).div(aiToSwap);
+    uint256 bnbForRewards = bnbReceived.mul(rewardToSwap).div(aiToSwap);
+    uint256 bnbForDev = bnbReceived.mul(devToSwap).div(aiToSwap);
 
     if (isOverLiquified()) {
       payable(rewardsBNBPool).transfer(bnbForLiq);
@@ -173,9 +175,9 @@ contract AIRouter {
       bnbForDev
     );
     
-    liqBalance = aiContract.balanceOf(address(this));
-    rewardBalance = 0;
-    devBalance = 0;
+    liqBalance = liqBalance.sub(swapThreshold);
+    rewardBalance = rewardBalance.sub(rewardToSwap);
+    devBalance = devBalance.sub(devToSwap);
   }
 
   function _distributeRoyalties() internal {
@@ -330,5 +332,12 @@ contract AIRouter {
     */
   function unauthorize(address adr) public onlyOwner {
       authorizations[adr] = false;
+  }
+
+	// Recover any BNB and AI sent to the contract is case of migration.
+	function rescue() external onlyOwner {
+    uint256 aiBalance = aiContract.balanceOf(address(this));
+    aiContract.transfer(contractOwner, aiBalance);
+    payable(contractOwner).transfer(address(this).balance);
   }
 }
