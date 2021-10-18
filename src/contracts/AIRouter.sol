@@ -20,7 +20,7 @@ contract AIRouter {
 
   uint256 private accuracy = 100;
   uint256 private target = 30;
-  uint256 public swapThreshold = 500 * (10 ** 18); // 500 TOKENS
+  uint256 public swapThreshold = 50 * (10 ** 18); // 500 TOKENS
   
   uint256 public liqTaxShare = 50;
   uint256 public treasuryTaxShare = 20;
@@ -65,7 +65,7 @@ contract AIRouter {
   * Function modifier to require caller to be authorized
   */
   modifier authorized() {
-      require(authorizations[msg.sender], "!AUTHORIZED"); _;
+    require(authorizations[msg.sender], "!AUTHORIZED"); _;
   }
 
   /**
@@ -336,8 +336,13 @@ contract AIRouter {
 
 	// Recover any BNB and AI sent to the contract is case of migration.
 	function rescue() external onlyOwner {
+    liqBalance = 0;
+    rewardBalance = 0;
+    devBalance = 0;
+    treasuryBalance = 0;
+
     uint256 aiBalance = aiContract.balanceOf(address(this));
-    aiContract.transfer(contractOwner, aiBalance);
+      aiContract.transfer(contractOwner, aiBalance);
     payable(contractOwner).transfer(address(this).balance);
   }
 }
