@@ -20,7 +20,7 @@ contract AIRouter {
 
   uint256 private accuracy = 100;
   uint256 private target = 30;
-  uint256 public swapThreshold = 50 * (10 ** 18); // 500 TOKENS
+  uint256 public swapThreshold = 50 * (10 ** 18); // 50 TOKENS
   
   uint256 public liqTaxShare = 50;
   uint256 public treasuryTaxShare = 20;
@@ -46,13 +46,12 @@ contract AIRouter {
 
   mapping (address => bool) internal authorizations;
 
-  constructor(address ai, address _pair) {
+  constructor(address ai) {
     contractOwner = msg.sender;
     authorize(contractOwner);
     changeAiAddress(ai);
 
     aiContract.approve(address(router), type(uint256).max);
-    pair = _pair;
   }
 
   receive() external payable {
@@ -197,7 +196,6 @@ contract AIRouter {
     if (_shouldSwapBack()) { liquify(); }
   }
   
-  // not finalised, waiting for the final calculations schema
   function distributeTax(uint256 amount) external onlyAi {
     if (amount > 0) {
       uint256 aiForLiq = _calculateShare(amount, liqTaxShare);
@@ -230,46 +228,34 @@ contract AIRouter {
     return amount.mul(share).div(100);
   }
 
-  function _validateShares(uint256[] memory shares) private pure {
+  function _validateShares(uint256[] memory shares) private pure returns (bool) {
     uint256 shareSum = 0;
     for (uint256 i = 0; i < shares.length; i++) {
       shareSum += shares[i];
     }
-    require(shareSum == 100, "Total shares amount should be 100");
+
+    if (shareSum == 100) { return true; }
+    return false;
   }
 
-  function changeLiqTaxShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    liqTaxShare = share;
-  }
-  function changeTreasuryTaxShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    treasuryTaxShare = share;
-  }
-  function changeRewardTaxShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    rewardTaxShare = share;
-  }
-  function changeDevTaxShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    devTaxShare = share;
+  function changeTaxShares(uint256[] memory shares) public onlyOwner {
+    require(shares.length != 4, 'wrong number of shares provided');
+    require(_validateShares(shares), 'sum is not 100');
+
+    liqTaxShare = shares[0];
+    treasuryTaxShare = shares[1];
+    rewardTaxShare = shares[2];
+    devTaxShare = shares[3];
   }
 
-  function changeLiqRoyaltyShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    liqRoyaltyShare = share;
-  }
-  function changeTreasuryRoyaltyShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    treasuryRoyaltyShare = share;
-  }
-  function changeRewardRoyaltyShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    rewardRoyaltyShare = share;
-  }
-  function changeDevRoyaltyShare(uint256 share) public onlyOwner {
-    require(share <= 100, 'cannot be more than 100');
-    devRoyaltyShare = share;
+  function changeRoyaltyShares(uint256[] memory shares) public onlyOwner {
+    require(shares.length != 4, 'wrong number of shares provided');
+    require(_validateShares(shares), 'sum is not 100');
+
+    liqRoyaltyShare = shares[0];
+    treasuryRoyaltyShare = shares[1];
+    rewardRoyaltyShare = shares[2];
+    devRoyaltyShare = shares[3];
   }
 
   function changeRewardAddress(address addr) public onlyOwner {
@@ -298,6 +284,11 @@ contract AIRouter {
   function changeLpLockAddress(address newLpAddress) public onlyOwner {
     require(newLpAddress != address(0), 'should not be 0 address');
     _lpLockAddress = newLpAddress;
+  }
+
+  function changePairAddress(address newPairAddress) public onlyOwner {
+    require(newPairAddress != address(0), 'should not be 0 address');
+    pair = newPairAddress;
   }
 
   /**
@@ -342,7 +333,7 @@ contract AIRouter {
     treasuryBalance = 0;
 
     uint256 aiBalance = aiContract.balanceOf(address(this));
-      aiContract.transfer(contractOwner, aiBalance);
+    aiContract.transfer(contractOwner, aiBalance);
     payable(contractOwner).transfer(address(this).balance);
   }
 }

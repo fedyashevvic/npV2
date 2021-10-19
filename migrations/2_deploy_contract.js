@@ -4,12 +4,12 @@ const AI = artifacts.require('AI')
 const AIRouter = artifacts.require('AIRouter')
 
 module.exports = async function(deployer) {
-  await deployer.deploy(AI, '100000000000000000000000');
+  await deployer.deploy(AI, '1000000000000000000000000');
   const aiContract = await AI.deployed();
-  const pair = await aiContract.ai2bnb();
-  console.log(pair)
+  // const pair = await aiContract.ai2bnb();
+  // console.log(pair)
 
-  const router = await deployer.deploy(AIRouter, aiContract.address, pair);
-
-  await aiContract.changeTaxAddressAndAmount(pair, router.address, '50');
+  // const router = await deployer.deploy(AIRouter, aiContract.address);
+  await deployer.deploy(AIRouter, aiContract.address);
+  // await aiContract.changeTaxAddressAndAmount(pair, router.address, '50');
 }

@@ -3,8 +3,6 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "./Auth.sol";
 import "./IBEP20.sol";
-import "./IDexRouter.sol";
-import "./IDexFactory.sol";
 import "./SafeMath.sol";
 import "./IERC721Enumerable.sol";
 
@@ -48,10 +46,8 @@ contract AI is IBEP20, Auth {
   // Fees. Some may be completely inactive at all times.
   uint256 feeDenominator = 1000;
 
-  address public ai2bnb;
   address private _pepeAddress = 0xa16b13cdFee9a134d17957Bef09dC3B5a4FddC1B;
-  address[] private pairs;
-  IDexRouter private router;
+  address[] private pairs; 
   INeuralPepe private PEPE = INeuralPepe(_pepeAddress);
 
   bool public swapEnabled = true;
@@ -59,16 +55,8 @@ contract AI is IBEP20, Auth {
   event TaxCollectionEnabled(bool enabledOrNot);
 
 	constructor(uint256 valueToMint) Auth(msg.sender) {
-		router = IDexRouter(0x3380aE82e39E42Ca34EbEd69aF67fAa0683Bb5c1);
-    ai2bnb = IDexFactory(router.factory()).createPair(router.WETH(), address(this));
-    _allowances[address(this)][address(router)] = type(uint256).max;
     isFeeExempt[msg.sender] = true;
     isFeeExempt[address(this)] = true;
-
-		pairs.push(ai2bnb);
-    _taxAddresses[ai2bnb] = address(this);
-    _taxAmount[ai2bnb] = 50;
-    _isLaunched[ai2bnb] = false;
     
 		_mint(owner, valueToMint);
 	}
@@ -339,10 +327,10 @@ contract AI is IBEP20, Auth {
   function changeTaxAddressAndAmount(address tradeAddress, address taxAddress, uint256 _newTaxAmount) public onlyOwner {
     require(_newTaxAmount >= 0 && _newTaxAmount <= 200, 'Provide valid tax between 1 and 20');
     require(_taxAddresses[tradeAddress] != address(0), 'Trade address doesnt exist');
-    _allowances[taxAddress][address(router)] = type(uint256).max;
 
     _taxAddresses[tradeAddress] = taxAddress;
     _taxAmount[tradeAddress] = _newTaxAmount;
     isFeeExempt[taxAddress] = true;
   }
+
 }
